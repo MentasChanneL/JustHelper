@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "com.prikolz.justhelper.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "TeleportConfirm"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}

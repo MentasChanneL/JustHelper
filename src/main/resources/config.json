@@ -1,0 +1,7 @@
+{
+  "custom_class_for_sign_output": {
+    "enable": false,
+    "compile": false
+  },
+  "enable_back_teleport": true
+}
