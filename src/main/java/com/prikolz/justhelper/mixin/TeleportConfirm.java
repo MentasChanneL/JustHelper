@@ -9,11 +9,9 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.network.message.ArgumentSignatureDataMap;
 import net.minecraft.network.message.LastSeenMessageList;
 import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -29,8 +27,10 @@ public class TeleportConfirm {
 		ClientPlayerEntity camera = MinecraftClient.getInstance().player;
 
 		if((string.startsWith("tp ") || string.startsWith("teleport ")) && camera != null) {
-			BlockEntity ent = camera.clientWorld.getBlockEntity(camera.getBlockPos());
+			BlockPos entPos = new BlockPos(4, (camera.getBlockY() - 5) / 7 * 7 + 5, camera.getBlockZ() / 4 * 4 + 1);
+			BlockEntity ent = camera.clientWorld.getBlockEntity(entPos);
 			Text text = Text.literal("");
+			MutableText fullText = Text.literal("");
 			Style orange = Style.EMPTY.withColor(Formatting.GOLD);
 			if(ent instanceof SignBlockEntity) {
 				SignBlockEntity sbe = (SignBlockEntity) ent;
@@ -39,6 +39,10 @@ public class TeleportConfirm {
 						.append(Text.literal(") "))
 						.setStyle(orange)
 				;
+				for(Text t : sbe.getFrontText().getMessages(false)) {
+					fullText = fullText.append(t);
+				}
+
 			}
 
 			String xyz = camera.getBlockX() + " " + camera.getBlockY() + " " + camera.getBlockZ();
@@ -54,8 +58,10 @@ public class TeleportConfirm {
 							.setStyle( Style.EMPTY
 									.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp @s " + xyz))
 									.withColor(Formatting.AQUA)
-									.withHoverEvent( new HoverEvent( HoverEvent.Action.SHOW_TEXT, Text
-											.literal("Нажмите, для телепортации\n\n" + JustSignOutput.mathFloor(camera.getBlockY()) + " этаж " + xyz)
+									.withHoverEvent( new HoverEvent( HoverEvent.Action.SHOW_TEXT,
+											Text.literal("")
+													.append(fullText)
+													.append(Text.literal("\n\n" + JustSignOutput.mathFloor(camera.getBlockY()) + " этаж " + camera.getBlockZ() / 4 + " линия " + xyz + "\nНажмите, для телепортации"))
 											.setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY))
 											)
 									)
