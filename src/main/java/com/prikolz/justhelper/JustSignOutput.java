@@ -67,7 +67,7 @@ public abstract class JustSignOutput {
                         Style.EMPTY.withColor(Formatting.WHITE)
                 ))
                 .setStyle( Style.EMPTY
-                        .withClickEvent( new ClickEvent( ClickEvent.Action.RUN_COMMAND, "/tp @s " + xyz))
+                        .withClickEvent( new ClickEvent( ClickEvent.Action.RUN_COMMAND, "/tp " + xyz))
                         .withHoverEvent( new HoverEvent( HoverEvent.Action.SHOW_TEXT, hoverText ))
                 );
         return text;

@@ -40,8 +40,9 @@ public class TeleportConfirm {
 						.setStyle(orange)
 				;
 				for(Text t : sbe.getFrontText().getMessages(false)) {
-					fullText = fullText.append(t);
+					fullText = fullText.append(t).append("\n");
 				}
+				fullText.setStyle(Style.EMPTY.withColor(Formatting.GRAY));
 
 			}
 
@@ -56,12 +57,12 @@ public class TeleportConfirm {
 							.append( Text.literal( xyz + floor).setStyle(yellow) )
 							.append( Text.literal(" (нажмите)").setStyle(Style.EMPTY.withColor(Formatting.AQUA)) )
 							.setStyle( Style.EMPTY
-									.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp @s " + xyz))
+									.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " + xyz))
 									.withColor(Formatting.AQUA)
 									.withHoverEvent( new HoverEvent( HoverEvent.Action.SHOW_TEXT,
 											Text.literal("")
 													.append(fullText)
-													.append(Text.literal("\n\n" + JustSignOutput.mathFloor(camera.getBlockY()) + " этаж " + camera.getBlockZ() / 4 + " линия " + xyz + "\nНажмите, для телепортации"))
+													.append(Text.literal("\n" + JustSignOutput.mathFloor(camera.getBlockY()) + " этаж " + camera.getBlockZ() / 4 + " линия " + xyz + "\nНажмите, для телепортации"))
 											.setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY))
 											)
 									)
