@@ -17,12 +17,16 @@ public abstract class TextsCommand {
                 int countTextPlaces = countSubstrings(Config.textGiveCommand, "%text%");
                 int free = (250 - Config.textGiveCommand.replaceAll("%text%", "").length()) / countTextPlaces;
                 if(free < 1) return "> В шаблонной команде нет свободного места! Укоротите команду в config.json!";
-                String clip = clipboard.replaceAll("\"", "\\\\\\\\\"");
-                List<String> els = splitText(clip, free);
+                List<String> els = splitText(clipboard.replaceAll("\n",""), free);
 
                 int i = 1;
                 for(String el : els) {
-                    CommandBuffer.sendCommand( Config.textGiveCommand.replaceAll("%text%", el).replaceAll("%index%", i + "") );
+                    String format = el;
+                    if(format.endsWith(" ")) format = format.substring(0, format.length() - 1);
+                    if(format.startsWith(" ")) format = format.substring(1);
+                    format = format.replaceAll("§", "");
+                    format = format.replaceAll("[\\x00-\\x1F\\x7F§]", "");
+                    CommandBuffer.sendCommand( Config.textGiveCommand.replaceAll("%text%", format).replaceAll("%index%", i + "") );
                     i++;
                 }
 

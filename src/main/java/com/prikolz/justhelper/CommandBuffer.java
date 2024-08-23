@@ -32,8 +32,8 @@ public abstract class CommandBuffer {
                         String command = buffer.get(0);
                         buffer.remove(0);
                         ClientPlayerEntity player = MinecraftClient.getInstance().player;
+                        System.out.println(">" + command + "<");
                         player.networkHandler.sendChatCommand(command);
-                        System.out.println(command);
                     }catch (Exception e) {
                         buffer.clear();
                     }
