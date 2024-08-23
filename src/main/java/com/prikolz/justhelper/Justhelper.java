@@ -1,29 +1,22 @@
 package com.prikolz.justhelper;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.sun.jna.platform.unix.solaris.LibKstat;
+import com.prikolz.justhelper.vars.TextsCommand;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientBlockEntityEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.entity.boss.BossBar;
-import net.minecraft.network.listener.ClientPacketListener;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.c2s.play.TeleportConfirmC2SPacket;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
-import java.io.IOException;
-import java.nio.file.Path;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
 
@@ -132,6 +125,41 @@ public class Justhelper implements ModInitializer {
 							})
 			);
 		});
+
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+			dispatcher.register(
+					ClientCommandManager.literal("texts")
+							.then( ClientCommandManager.literal("stop" )
+									.executes(context -> {
+										boolean result = CommandBuffer.stopBuffer();
+										if(result) {
+											context.getSource().sendFeedback(Text.literal("JustHelper > Поток команд остановлен"));
+											return 1;
+										}
+										context.getSource().sendFeedback(Text.literal("JustHelper > Поток команд не был активен").setStyle(Style.EMPTY.withColor(Formatting.GRAY)));
+										return 0;
+									})
+							)
+							.executes(context -> {
+								context.getSource().sendFeedback(
+										Text.literal("JustHelper > Получение текстовых значений...").setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
+								);
+								String err = TextsCommand.run();
+								if(err.startsWith("> ")) {
+									context.getSource().sendFeedback(Text.literal("JustHelper " + err).setStyle(Style.EMPTY.withColor(Formatting.RED)));
+									return 0;
+								}
+								context.getSource().sendFeedback(
+										Text.literal("JustHelper > Текст разделен на " + err + " частей!").setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
+								);
+								context.getSource().sendFeedback(
+										Text.literal("JustHelper > Для остановки введите /texts stop").setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
+								);
+								return 1;
+							})
+			);
+		});
+
 	}
 
 }

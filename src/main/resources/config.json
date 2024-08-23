@@ -3,5 +3,7 @@
     "enable": false,
     "compile": false
   },
-  "enable_back_teleport": true
+  "enable_back_teleport": true,
+  "texts_give_command": "give @s book{creative_plus:{value:{type:\"text\",text:\"%text%\",parsing:\"legacy\"}},display:{Name:'{\"italic\":false,\"text\":\"%index%\"}'}}",
+  "command_buffer_cooldown": 700
 }
