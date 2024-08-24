@@ -38,14 +38,18 @@ public abstract class TextsCommand {
 
                 clipboard = clipboard.replaceAll("[\\x00-\\x1F\\x7F§]", "");
                 String inTag = clipboard.replaceAll("\"", "\\\\\"");
-                String inDisplay = clipboard.replaceAll("\"", "\\\\\\\\\"");
+                String inDisplay = clipboard.replaceAll("\"", "\\\\\\\\\"").replaceAll("'", "\\\\'");
 
                 String nbt = "{display: {Name: '{\"italic\":false,\"text\":\"" + inDisplay + "\"}', Lore: ['{\"italic\":false,\"color\":\"#ABC4D6\",\"extra\":[\" \",{\"color\":\"yellow\",\"translate\":\"creative_plus.argument.text.parsing_type.legacy\"}],\"translate\":\"creative_plus.argument.text.parsing_type\"}', '{\"italic\":false,\"color\":\"gray\",\"translate\":\"creative_plus.argument.text.parsing_type.about.legacy\"}', '{\"italic\":false,\"color\":\"#ABC4D6\",\"translate\":\"creative_plus.argument.text.raw_view\"}', '{\"italic\":false,\"color\":\"white\",\"text\":\"" + inDisplay + "\"}']}, creative_plus: {value: {type: \"text\", text: \"" + inTag + "\", parsing: \"legacy\"}}}";
                 ItemStack book = createNBTItemStack(new ItemStack(Items.BOOK), 1, nbt);
                 ClientPlayerEntity player = MinecraftClient.getInstance().player;
-                player.getInventory().setStack(player.getInventory().selectedSlot, book);
-
-                return "";
+                for(int slot = 0; slot < 36; slot++) {
+                    if(player.getInventory().getStack(slot).isEmpty()) {
+                        player.getInventory().setStack(slot, book);
+                        return "";
+                    };
+                }
+                return "> В инвентаре нет свободного слота!";
             } catch (Exception e) {
                 e.printStackTrace();
                 return "> " + e.getMessage();

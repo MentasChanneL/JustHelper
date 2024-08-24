@@ -28,7 +28,6 @@ public class Config {
     public static boolean compileCustomOutputClass = false;
     public static boolean enableBackTeleport = true;
     public static List<String> messages = new ArrayList<>();
-    public static String textGiveCommand = "";
     public static int commandBufferCD = 700;
 
     public static void initialize() throws Exception {
@@ -36,7 +35,6 @@ public class Config {
         messages.clear();
 
         String directoryName = FabricLoader.getInstance().getGameDir().toString() + "/justhelper/utils";
-        String fileName = "SignOutput.java";
 
         File directory = new File(directoryName);
         if (!directory.exists()) {
@@ -71,7 +69,6 @@ public class Config {
         useCustomOutputClass = (boolean) getParamJson("enable", customClass, false);
         compileCustomOutputClass = (boolean) getParamJson("compile", customClass, false);
         enableBackTeleport = (boolean) getParamJson("enable_back_teleport", main, true);
-        textGiveCommand = (String) getParamJson("texts_give_command", main, "give @s book{creative_plus:{value:{type:\"text\",text:\"%text%\",parsing:\"legacy\"}},display:{Name:'{\"italic\":false,\"text\":\"%text%\"}'}}");
         commandBufferCD = (int) getParamJson("command_buffer_cooldown", main, 700);
     }
 

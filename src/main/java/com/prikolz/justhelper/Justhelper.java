@@ -127,31 +127,14 @@ public class Justhelper implements ModInitializer {
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 			dispatcher.register(
 					ClientCommandManager.literal("texts")
-							.then( ClientCommandManager.literal("stop" )
-									.executes(context -> {
-										boolean result = CommandBuffer.stopBuffer();
-										if(result) {
-											context.getSource().sendFeedback(Text.literal("JustHelper > Поток команд остановлен"));
-											return 1;
-										}
-										context.getSource().sendFeedback(Text.literal("JustHelper > Поток команд не был активен").setStyle(Style.EMPTY.withColor(Formatting.GRAY)));
-										return 0;
-									})
-							)
 							.executes(context -> {
-								context.getSource().sendFeedback(
-										Text.literal("JustHelper > Получение текстовых значений...").setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
-								);
 								String err = TextsCommand.run();
 								if(err.startsWith("> ")) {
 									context.getSource().sendFeedback(Text.literal("JustHelper " + err).setStyle(Style.EMPTY.withColor(Formatting.RED)));
 									return 0;
 								}
 								context.getSource().sendFeedback(
-										Text.literal("JustHelper > Текст разделен на " + err + " частей!").setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
-								);
-								context.getSource().sendFeedback(
-										Text.literal("JustHelper > Для остановки введите /texts stop").setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
+										Text.literal("JustHelper > Получен текст из буфера обмена").setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
 								);
 								return 1;
 							})

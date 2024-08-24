@@ -4,6 +4,5 @@
     "compile": false
   },
   "enable_back_teleport": true,
-  "texts_give_command": "text legacy %text%",
   "command_buffer_cooldown": 700
 }
