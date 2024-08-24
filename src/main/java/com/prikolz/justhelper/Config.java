@@ -130,12 +130,12 @@ public class Config {
                 }
                 return result.getAsString();
             }
-            if (defaultValue.getClass().getName().equals(int.class.getName())) {
+            if (defaultValue.getClass().getName().equals(Integer.class.getName())) {
                 if(!result.isJsonPrimitive() || !result.getAsJsonPrimitive().isNumber()) {
                     messages.add("КОНФИГ: Неверное значение " + key + ", ожидалось целое число!");
                     return defaultValue;
                 }
-                return result.getAsNumber();
+                return result.getAsNumber().intValue();
             }
         }catch (Exception e) {
             messages.add("КОНФИГ: ошибка чтения: " + e.getMessage());
