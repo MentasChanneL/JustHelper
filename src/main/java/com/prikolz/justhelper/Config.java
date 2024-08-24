@@ -3,10 +3,7 @@ package com.prikolz.justhelper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.prikolz.justhelper.Justhelper;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.resource.ResourceType;
 import net.minecraft.text.Text;
 
 import javax.tools.*;
