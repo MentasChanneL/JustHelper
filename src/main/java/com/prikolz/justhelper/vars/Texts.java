@@ -11,7 +11,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.StringNbtReader;
 
-public abstract class TextsCommand {
+public abstract class Texts {
     public static String run() {
         String clipboard = MinecraftClient.getInstance().keyboard.getClipboard();
         if (!clipboard.isEmpty()) {
