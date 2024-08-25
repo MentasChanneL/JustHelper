@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.prikolz.justhelper.Config;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -12,7 +13,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.StringNbtReader;
 
 public abstract class Texts {
-    public static String run() {
+    public static String run(boolean clip) {
         String clipboard = MinecraftClient.getInstance().keyboard.getClipboard();
         if (!clipboard.isEmpty()) {
             try {
@@ -32,24 +33,43 @@ public abstract class Texts {
                 //    i++;
                 //}
 
-                if(clipboard.length() > 25000) {
-                    return "> Текст слишком большой! Максимальный размер - 25 000 символов.";
+                if(clipboard.length() > 16000 && !clip) return "> Текст слишком большой! Максимальный размер - 16 000 символов. Используйте аргумент +clip, чтобы разделить текст на несколько книг.";
+
+
+                List<String> els;
+                if(clip) {
+                    els = splitText(clipboard.replaceAll("\n",""), Config.textsClipLimit);
+                }else{
+                    els = List.of(clipboard);
                 }
 
-                clipboard = clipboard.replaceAll("[\\x00-\\x1F\\x7F§]", "");
-                String inTag = clipboard.replaceAll("\"", "\\\\\"");
-                String inDisplay = clipboard.replaceAll("\"", "\\\\\\\\\"").replaceAll("'", "\\\\'");
-
-                String nbt = "{display: {Name: '{\"italic\":false,\"text\":\"" + inDisplay + "\"}', Lore: ['{\"italic\":false,\"color\":\"#ABC4D6\",\"extra\":[\" \",{\"color\":\"yellow\",\"translate\":\"creative_plus.argument.text.parsing_type.legacy\"}],\"translate\":\"creative_plus.argument.text.parsing_type\"}', '{\"italic\":false,\"color\":\"gray\",\"translate\":\"creative_plus.argument.text.parsing_type.about.legacy\"}', '{\"italic\":false,\"color\":\"#ABC4D6\",\"translate\":\"creative_plus.argument.text.raw_view\"}', '{\"italic\":false,\"color\":\"white\",\"text\":\"" + inDisplay + "\"}']}, creative_plus: {value: {type: \"text\", text: \"" + inTag + "\", parsing: \"legacy\"}}}";
-                ItemStack book = createNBTItemStack(new ItemStack(Items.BOOK), 1, nbt);
+                int[] slots = new int[els.size()];
                 ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+                int i = 0;
                 for(int slot = 0; slot < 36; slot++) {
                     if(player.getInventory().getStack(slot).isEmpty()) {
-                        player.getInventory().setStack(slot, book);
-                        return "";
-                    };
+                        slots[i] = slot;
+                        i++;
+                        if(i >= slots.length) break;
+                    }
                 }
-                return "> В инвентаре нет свободного слота!";
+
+                if(i + 1 < els.size()) return "> Нет свободных слотов в инвентаре!";
+
+                i = 0;
+
+                for(String el : els) {
+                    el = el.replaceAll("[\\x00-\\x1F\\x7F§]", "");
+                    String inTag = el.replaceAll("\"", "\\\\\"");
+                    String inDisplay = el.replaceAll("\"", "\\\\\\\\\"").replaceAll("'", "\\\\'");
+
+                    String nbt = "{display: {Name: '{\"italic\":false,\"text\":\"" + inDisplay + "\"}', Lore: ['{\"italic\":false,\"color\":\"#ABC4D6\",\"extra\":[\" \",{\"color\":\"yellow\",\"translate\":\"creative_plus.argument.text.parsing_type.legacy\"}],\"translate\":\"creative_plus.argument.text.parsing_type\"}', '{\"italic\":false,\"color\":\"gray\",\"translate\":\"creative_plus.argument.text.parsing_type.about.legacy\"}', '{\"italic\":false,\"color\":\"#ABC4D6\",\"translate\":\"creative_plus.argument.text.raw_view\"}', '{\"italic\":false,\"color\":\"white\",\"text\":\"" + inDisplay + "\"}']}, creative_plus: {value: {type: \"text\", text: \"" + inTag + "\", parsing: \"legacy\"}}}";
+                    ItemStack book = createNBTItemStack(new ItemStack(Items.BOOK), 1, nbt);
+                    player.getInventory().setStack(slots[i], book);
+                    i++;
+                }
+                return "";
             } catch (Exception e) {
                 e.printStackTrace();
                 return "> " + e.getMessage();

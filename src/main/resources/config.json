@@ -4,5 +4,8 @@
     "compile": false
   },
   "enable_back_teleport": true,
+  "texts_command": {
+    "+clip_limit": 5000
+  },
   "command_buffer_cooldown": 700
 }

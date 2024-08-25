@@ -26,6 +26,7 @@ public class Config {
     public static boolean enableBackTeleport = true;
     public static List<String> messages = new ArrayList<>();
     public static int commandBufferCD = 700;
+    public static int textsClipLimit = 5000;
 
     public static void initialize() throws Exception {
 
@@ -67,6 +68,8 @@ public class Config {
         compileCustomOutputClass = (boolean) getParamJson("compile", customClass, false);
         enableBackTeleport = (boolean) getParamJson("enable_back_teleport", main, true);
         commandBufferCD = (int) getParamJson("command_buffer_cooldown", main, 700);
+        JsonObject texts = (JsonObject) getParamJson("texts_command", main, new JsonObject());
+        textsClipLimit = (int) getParamJson("+clip_limit", texts, 5000);
     }
 
     public static void compileJava() throws Exception {
