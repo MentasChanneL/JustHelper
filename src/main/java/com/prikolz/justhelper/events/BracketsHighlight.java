@@ -44,7 +44,11 @@ public class BracketsHighlight {
         Block clickedBlock = clickedBlockState.getBlock();
 
         if (clickedBlock == Blocks.PISTON && world.isClient) {
-            POSITIONS_TO_RENDER.clear();
+            if (!POSITIONS_TO_RENDER.isEmpty()) {
+                POSITIONS_TO_RENDER.clear();
+                return ActionResult.PASS;
+            }
+
             Direction clickedPistonFacing = clickedBlockState.get(Properties.FACING);
 
             int stepX;
