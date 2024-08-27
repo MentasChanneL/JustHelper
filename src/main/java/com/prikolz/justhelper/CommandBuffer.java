@@ -17,23 +17,23 @@ public abstract class CommandBuffer {
 
     public static void sendCommand(String command) {
         buffer.add(command);
-        if(!bufferActive) {
+        if (!bufferActive) {
             bufferActive = true;
             bufferTimer = new Timer();
             bufferBody = new TimerTask() {
                 @Override
                 public void run() {
-                    try{
+                    try {
                         String command = buffer.get(0);
                         buffer.remove(0);
                         ClientPlayerEntity player = MinecraftClient.getInstance().player;
                         System.out.println(">" + command + "<");
                         player.networkHandler.sendChatCommand(command);
-                    }catch (Exception e) {
+                    } catch (Exception e) {
                         buffer.clear();
                     }
 
-                    if( buffer.isEmpty() ) {
+                    if (buffer.isEmpty()) {
                         bufferActive = false;
                         bufferTimer.cancel();
                     }
@@ -44,7 +44,7 @@ public abstract class CommandBuffer {
     }
 
     public static boolean stopBuffer() {
-        if(bufferActive) {
+        if (bufferActive) {
             bufferTimer.cancel();
             bufferActive = false;
             return true;

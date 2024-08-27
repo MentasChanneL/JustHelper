@@ -1,11 +1,12 @@
 package com.prikolz.justhelper;
 
-import net.minecraft.text.*;
+import java.util.HashMap;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-import java.util.HashMap;
-
 public class SignInfo {
+
     public final int x;
     public final int y;
     public final int z;
@@ -18,7 +19,7 @@ public class SignInfo {
         this.lines = lines;
     }
 
-    private static final HashMap<String, String> miniSymvols = setFloorsym();
+    private static final HashMap<String, String> miniSymbols = setFloorsym();
 
     private static HashMap<String, String> setFloorsym() {
         HashMap<String, String> result = new HashMap<>();
@@ -42,19 +43,19 @@ public class SignInfo {
 
     private String toMini(String str) {
         String result = str;
-        for(String key : miniSymvols.keySet()) {
-            result = result.replaceAll(key, miniSymvols.get(key));
+        for (String key : miniSymbols.keySet()) {
+            result = result.replaceAll(key, miniSymbols.get(key));
         }
         return result;
     }
 
     public Text generate() {
-        if(!Config.useCustomOutputClass) {
+        if (!Config.useCustomOutputClass) {
             return JustSignOutput.generate(x, y, z, lines);
         }
         try {
             return (Text) Config.signGenerateMethod.invoke(Config.signGenerateInstance, this.x, this.y, this.z, this.lines);
-        }catch (Exception e) {
+        } catch (Exception e) {
             return Text.literal("Message generate error! " + e.getMessage()).setStyle(Style.EMPTY.withColor(Formatting.RED));
         }
     }

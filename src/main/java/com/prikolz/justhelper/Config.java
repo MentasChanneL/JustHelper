@@ -3,11 +3,12 @@ package com.prikolz.justhelper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.text.Text;
-
-import javax.tools.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -16,6 +17,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.text.Text;
 
 public class Config {
 
@@ -45,7 +53,9 @@ public class Config {
 
         if (!Files.exists(filePath)) {
             InputStream stream = Config.class.getClassLoader().getResourceAsStream("SignOutput.java");
-            if(stream == null) throw new Exception("RESOURCE SignOutput.java NOT FOUND");
+            if (stream == null) {
+                throw new Exception("RESOURCE SignOutput.java NOT FOUND");
+            }
             File file = new File(directoryName + "/SignOutput.java");
             try (OutputStream outputStream = new FileOutputStream(file)) {
                 byte[] buffer = new byte[1024];
@@ -91,50 +101,52 @@ public class Config {
         Class<?> signOutputClass = classLoader.loadClass("SignOutput");
         signGenerateInstance = signOutputClass.getDeclaredConstructor().newInstance();
         signGenerateMethod = null;
-        for( Method method : signOutputClass.getMethods()) {
-            if(method.getName().equals("generate")) {
+        for (Method method : signOutputClass.getMethods()) {
+            if (method.getName().equals("generate")) {
                 signGenerateMethod = method;
             }
         }
-        if(signGenerateMethod == null) throw new Exception("Method 'generate' not found!");
+        if (signGenerateMethod == null) {
+            throw new Exception("Method 'generate' not found!");
+        }
     }
 
     private static Object getParamJson(String key, JsonObject object, Object defaultValue) {
         JsonElement result = object.get(key);
-        if(result == null) {
+        if (result == null) {
             messages.add("КОНФИГ: Параметр " + key + " не найден!");
             return defaultValue;
         }
         try {
             if (defaultValue.getClass().getName().equals(Boolean.class.getName())) {
-                if(!result.isJsonPrimitive() || !result.getAsJsonPrimitive().isBoolean()) {
+                if (!result.isJsonPrimitive() || !result.getAsJsonPrimitive().isBoolean()) {
                     messages.add("КОНФИГ: Неверное значение " + key + ", ожидался true/false!");
                     return defaultValue;
                 }
                 return result.getAsBoolean();
             }
             if (defaultValue.getClass().getName().equals(JsonObject.class.getName())) {
-                if(!result.isJsonObject()) {
+                if (!result.isJsonObject()) {
                     messages.add("КОНФИГ: Неверное значение " + key + ", ожидался объект в фигурных скобках!");
                     return defaultValue;
                 }
                 return result.getAsJsonObject();
             }
             if (defaultValue.getClass().getName().equals(String.class.getName())) {
-                if(!result.isJsonPrimitive() || !result.getAsJsonPrimitive().isString()) {
+                if (!result.isJsonPrimitive() || !result.getAsJsonPrimitive().isString()) {
                     messages.add("КОНФИГ: Неверное значение " + key + ", ожидалась строка!");
                     return defaultValue;
                 }
                 return result.getAsString();
             }
             if (defaultValue.getClass().getName().equals(Integer.class.getName())) {
-                if(!result.isJsonPrimitive() || !result.getAsJsonPrimitive().isNumber()) {
+                if (!result.isJsonPrimitive() || !result.getAsJsonPrimitive().isNumber()) {
                     messages.add("КОНФИГ: Неверное значение " + key + ", ожидалось целое число!");
                     return defaultValue;
                 }
                 return result.getAsNumber().intValue();
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             messages.add("КОНФИГ: ошибка чтения: " + e.getMessage());
         }
         messages.add("КОНФИГ: К параметру " + key + " применено стандартное значение: " + defaultValue);
@@ -144,7 +156,9 @@ public class Config {
     public static void saveDefaultConfig() throws Exception {
         String directoryName = FabricLoader.getInstance().getGameDir().toString() + "/justhelper";
         InputStream stream = Config.class.getClassLoader().getResourceAsStream("config.json");
-        if(stream == null) throw new Exception("RESOURCE config.json NOT FOUND");
+        if (stream == null) {
+            throw new Exception("RESOURCE config.json NOT FOUND");
+        }
         File file = new File(directoryName + "/config.json");
         try (OutputStream outputStream = new FileOutputStream(file)) {
             byte[] buffer = new byte[1024];

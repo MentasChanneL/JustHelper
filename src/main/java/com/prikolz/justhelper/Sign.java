@@ -13,11 +13,12 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Sign {
+
     public final int x;
     public final int y;
     public final int z;
 
-    public Sign( int x, int y, int z) {
+    public Sign(int x, int y, int z) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -30,46 +31,51 @@ public class Sign {
     public static final HashMap<String, Sign> signs = new HashMap<>();
 
     public static void searchSigns(FabricClientCommandSource source, String search, boolean printAll) {
-        if(Config.signGenerateMethod == null && Config.useCustomOutputClass) {
+        if (Config.signGenerateMethod == null && Config.useCustomOutputClass) {
             source.sendFeedback(
-                    Text.literal("♯ Не найден класс сообщений! Пожалуйста, выполните /justhelper reload_config")
-                            .setStyle(Style.EMPTY
-                                    .withColor(Formatting.YELLOW))
+                Text.literal("♯ Не найден класс сообщений! Пожалуйста, выполните /justhelper reload_config")
+                    .setStyle(Style.EMPTY
+                        .withColor(Formatting.YELLOW))
             );
             return;
         }
         ClientWorld world = source.getWorld();
-        boolean founded;
-        SignBlockEntity ent;
+        boolean found;
+        SignBlockEntity entity;
         List<SignInfo> data = new ArrayList<>();
-        for(Sign sign : Sign.signs.values()) {
+        for (Sign sign : Sign.signs.values()) {
             try {
-                founded = printAll;
-                ent = (SignBlockEntity) world.getBlockEntity(new BlockPos(sign.x, sign.y, sign.z));
-                if(ent == null) continue;
-                for(Text text : ent.getFrontText().getMessages(false)) {
-                    if(text.getString().contains(search)) founded = true;
+                found = printAll;
+                entity = (SignBlockEntity) world.getBlockEntity(new BlockPos(sign.x, sign.y, sign.z));
+                if (entity == null) continue;
+
+                for (Text text : entity.getFrontText().getMessages(false)) {
+                    if (text.getString().toLowerCase().contains(search.toLowerCase())) {
+                        found = true;
+                    }
                 }
-                if(!founded) continue;
-                data.add( new SignInfo(sign.x, sign.y, sign.z, ent.getFrontText().getMessages(false)) );
-            }catch (Exception ignore ) {}
+                if (!found) continue;
+
+                data.add(new SignInfo(sign.x, sign.y, sign.z, entity.getFrontText().getMessages(false)));
+            } catch (Exception ignore) {
+            }
         }
         if (data.isEmpty()) {
             source.sendFeedback(
-                    Text.literal("♯ Не найдены таблички с \"" + search + "\"")
-                            .setStyle(Style.EMPTY
-                                    .withColor(Formatting.DARK_GRAY))
+                Text.literal("♯ Не найдены таблички с \"" + search + "\"")
+                    .setStyle(Style.EMPTY
+                        .withColor(Formatting.DARK_GRAY))
             );
             return;
         }
         if (printAll) {
             source.sendFeedback(Text.literal("\n♯ Содержания табличек:"));
-        }else {
+        } else {
             source.sendFeedback(Text.literal("\n♯ Таблички с содержанием \"" + search + "\":"));
         }
-        for(SignInfo info : data) {
-            source.sendFeedback( info.generate() );
+        for (SignInfo info : data) {
+            source.sendFeedback(info.generate());
         }
-        source.sendFeedback(Text.literal(""));
+        source.sendFeedback(Text.empty());
     }
 }
