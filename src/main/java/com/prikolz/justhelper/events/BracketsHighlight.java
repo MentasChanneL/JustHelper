@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -28,14 +29,21 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11;
 
 public class BracketsHighlight {
 
+    public static final Set<BlockPos> HIGHLIGHTED_BLOCKS = new HashSet<>();
+
     public static void register() {
         UseBlockCallback.EVENT.register(BracketsHighlight::onBlockRightClick);
+        AttackBlockCallback.EVENT.register(BracketsHighlight::onBlockAttack);
 
         WorldRenderEvents.LAST.register(BracketsHighlight::renderOutline);
+    }
+
+    private static ActionResult onBlockAttack(PlayerEntity playerEntity, World world, Hand hand, BlockPos blockPos, Direction direction) {
+        HIGHLIGHTED_BLOCKS.clear();
+        return ActionResult.PASS;
     }
 
     private static ActionResult onBlockRightClick(PlayerEntity player, World world, Hand hand, BlockHitResult hitResult) {
@@ -44,8 +52,18 @@ public class BracketsHighlight {
         Block clickedBlock = clickedBlockState.getBlock();
 
         if (clickedBlock == Blocks.PISTON && world.isClient) {
-            if (!POSITIONS_TO_RENDER.isEmpty()) {
-                POSITIONS_TO_RENDER.clear();
+            if (hand != Hand.MAIN_HAND) {
+                return ActionResult.FAIL;
+            }
+
+            if (HIGHLIGHTED_BLOCKS.contains(clickedBlockPos)) {
+                HIGHLIGHTED_BLOCKS.clear();
+                return ActionResult.PASS;
+            } else {
+                HIGHLIGHTED_BLOCKS.clear();
+            }
+
+            if (player.isSneaking()) {
                 return ActionResult.PASS;
             }
 
@@ -81,8 +99,8 @@ public class BracketsHighlight {
                             continue;
                         }
 
-                        POSITIONS_TO_RENDER.add(clickedBlockPos);
-                        POSITIONS_TO_RENDER.add(currentPos);
+                        HIGHLIGHTED_BLOCKS.add(clickedBlockPos);
+                        HIGHLIGHTED_BLOCKS.add(currentPos);
                         break;
                     }
                 }
@@ -92,15 +110,13 @@ public class BracketsHighlight {
         return ActionResult.PASS;
     }
 
-    private static final Set<BlockPos> POSITIONS_TO_RENDER = new HashSet<>();
-
     public static void renderOutline(WorldRenderContext context) {
         ClientWorld world = context.world();
 
-        for (BlockPos pos : POSITIONS_TO_RENDER) {
+        for (BlockPos pos : HIGHLIGHTED_BLOCKS) {
             BlockState state = world.getBlockState(pos);
 
-            Color color = new Color(255, 255, 0, 255);
+            Color color = new Color(255, 255, 255, 127);
             float[] colorComponents = new float[] {color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F, color.getAlpha() / 255F};
 
             state.getOutlineShape(world, pos).forEachBox((minX, minY, minZ, maxX, maxY, maxZ) -> {
@@ -114,7 +130,7 @@ public class BracketsHighlight {
                     (float) (pos.getZ() + maxZ + zFightingOffset)
                 );
 
-                renderOutlineHelper(context, box, colorComponents, 2.5F);
+                renderOutlineHelper(context, box, colorComponents, 2f);
             });
         }
     }
@@ -126,11 +142,10 @@ public class BracketsHighlight {
         BufferBuilder buffer = tessellator.getBuffer();
 
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
-        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
         RenderSystem.lineWidth(lineWidth);
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
-        RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        RenderSystem.enableBlend();
 
         matrices.push();
         matrices.translate(-camera.getX(), -camera.getY(), -camera.getZ());
@@ -143,6 +158,6 @@ public class BracketsHighlight {
         RenderSystem.lineWidth(1F);
         RenderSystem.enableCull();
         RenderSystem.disableDepthTest();
-        RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        RenderSystem.disableBlend();
     }
 }
