@@ -120,7 +120,7 @@ public class BracketsHighlight {
         BufferBuilder buffer = tessellator.getBuffer();
 
         Color color = new Color(255, 255, 0, 127);
-        float[] colorComponents = new float[] { color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f };
+        float[] colorComponents = new float[] {color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f};
 
         double zFightingOffset = 0.001;
 
