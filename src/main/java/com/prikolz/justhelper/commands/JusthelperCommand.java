@@ -9,56 +9,60 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public abstract class JusthelperCommand {
+
     public static void register() {
         LiteralArgumentBuilder<FabricClientCommandSource> manager =
-        ClientCommandManager.literal("justhelper")
-                .then( ClientCommandManager.literal("reload_config" )
-                        .executes(context -> {
-                            context.getSource().sendFeedback(Text.literal("JustHelper > Перезагрузка конфига..."));
-                            try {
-                                Config.initialize();
-                                if(Config.useCustomOutputClass) {
-                                    if(Config.compileCustomOutputClass) Config.compileJava();
-                                    Config.loadCustomOutClass();
+            ClientCommandManager.literal("justhelper")
+                .then(ClientCommandManager.literal("reload_config")
+                    .executes(context -> {
+                        context.getSource().sendFeedback(Text.literal("JustHelper > Перезагрузка конфига..."));
+                        try {
+                            Config.initialize();
+                            if (Config.useCustomOutputClass) {
+                                if (Config.compileCustomOutputClass) {
+                                    Config.compileJava();
                                 }
-                            }catch (Exception e) {
-                                context.getSource().sendFeedback(
-                                        Text.literal("Ошибка: ")
-                                                .append(Text.literal(e.getMessage()))
-                                                .setStyle(JustCommand.error)
-                                );
-                                e.printStackTrace();
-                                return 0;
+                                Config.loadCustomOutClass();
                             }
-                            for(String msg : Config.messages) {
-                                context.getSource().sendFeedback( Text.literal(msg) );
-                            }
-                            context.getSource().sendFeedback(Text.literal("JustHelper > Перезагрузка конфига выполнена!")
-                                    .setStyle(JustCommand.sucsess));
-                            return 1;
-                        })
+                        } catch (Exception e) {
+                            context.getSource().sendFeedback(
+                                Text.literal("Ошибка: ")
+                                    .append(Text.literal(e.getMessage()))
+                                    .setStyle(JustCommand.error)
+                            );
+                            e.printStackTrace();
+                            return 0;
+                        }
+                        for (String msg : Config.messages) {
+                            context.getSource().sendFeedback(Text.literal(msg));
+                        }
+                        context.getSource().sendFeedback(Text.literal("JustHelper > Перезагрузка конфига выполнена!")
+                            .setStyle(JustCommand.sucsess));
+                        return 1;
+                    })
                 )
-                .then( ClientCommandManager.literal("save_default_config" )
-                        .executes(context -> {
-                            context.getSource().sendFeedback(Text.literal("JustHelper > Сохранение стандартного конфига..."));
-                            try { Config.saveDefaultConfig(); } catch (Exception e) {
-                                context.getSource().sendFeedback(Text.literal("JustHelper > Ошибка сохранения стандартного конфига! " + e.getMessage()).setStyle(JustCommand.error));
-                                return 0;
-                            }
-                            context.getSource().sendFeedback(Text.literal("JustHelper > Стандартный конфиг сохранен!").setStyle(JustCommand.sucsess));
-                            return 1;
-                        })
+                .then(ClientCommandManager.literal("save_default_config")
+                    .executes(context -> {
+                        context.getSource().sendFeedback(Text.literal("JustHelper > Сохранение стандартного конфига..."));
+                        try {
+                            Config.saveDefaultConfig();
+                        } catch (Exception e) {
+                            context.getSource().sendFeedback(Text.literal("JustHelper > Ошибка сохранения стандартного конфига! " + e.getMessage()).setStyle(JustCommand.error));
+                            return 0;
+                        }
+                        context.getSource().sendFeedback(Text.literal("JustHelper > Стандартный конфиг сохранен!").setStyle(JustCommand.sucsess));
+                        return 1;
+                    })
 
                 )
                 .executes(context -> {
                     context.getSource().sendFeedback(
-                            Text.literal("JustHelper > Аргументы:").setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
-                                    .append( Text.literal("\nreload_config - Перезагрузить конфиг").setStyle(Style.EMPTY
-                                            .withColor(Formatting.GOLD)) )
+                        Text.literal("JustHelper > Аргументы:").setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
+                            .append(Text.literal("\nreload_config - Перезагрузить конфиг").setStyle(Style.EMPTY
+                                .withColor(Formatting.GOLD)))
                     );
                     return 1;
-                })
-                ;
+                });
         JustCommand.registerInDispacher(manager);
     }
 }

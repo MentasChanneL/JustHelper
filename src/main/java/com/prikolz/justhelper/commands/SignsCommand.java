@@ -12,19 +12,18 @@ public abstract class SignsCommand {
 
     public static void register() {
         LiteralArgumentBuilder<FabricClientCommandSource> manager =
-                ClientCommandManager.literal("signs")
-                        .then(argument("text", StringArgumentType.greedyString())
-                                .executes(context -> {
-                                    String search = StringArgumentType.getString(context, "text");
-                                    Sign.searchSigns(context.getSource(), search, false);
-                                    return 1;
-                                })
-                        )
-                        .executes(context -> {
-                            Sign.searchSigns(context.getSource(), "-", true);
-                            return 1;
-                        })
-            ;
+            ClientCommandManager.literal("signs")
+                .then(argument("text", StringArgumentType.greedyString())
+                    .executes(context -> {
+                        String search = StringArgumentType.getString(context, "text");
+                        Sign.searchSigns(context.getSource(), search, false);
+                        return 1;
+                    })
+                )
+                .executes(context -> {
+                    Sign.searchSigns(context.getSource(), "-", true);
+                    return 1;
+                });
         JustCommand.registerInDispacher(manager);
     }
 }

@@ -13,6 +13,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.StringNbtReader;
 
 public abstract class Texts {
+
     public static String run(boolean clip) {
         String clipboard = MinecraftClient.getInstance().keyboard.getClipboard();
         if (!clipboard.isEmpty()) {
@@ -21,7 +22,7 @@ public abstract class Texts {
                 //int free = (250 - Config.textGiveCommand.replaceAll("%text%", "").length()) / countTextPlaces;
                 //if(free < 1) return "> В шаблонной команде нет свободного места! Укоротите команду в config.json!";
                 //List<String> els = splitText(clipboard.replaceAll("\n",""), free);
-//
+                //
                 //int i = 1;
                 //for(String el : els) {
                 //    String format = el;
@@ -33,13 +34,15 @@ public abstract class Texts {
                 //    i++;
                 //}
 
-                if(clipboard.length() > 16000 && !clip) return "> Текст слишком большой! Максимальный размер - 16 000 символов. Используйте аргумент +clip, чтобы разделить текст на несколько книг.";
+                if (clipboard.length() > 16000 && !clip) {
+                    return "> Текст слишком большой! Максимальный размер - 16 000 символов. Используйте аргумент +clip, чтобы разделить текст на несколько книг.";
+                }
 
 
                 List<String> els;
-                if(clip) {
-                    els = splitText(clipboard.replaceAll("\n",""), Config.textsClipLimit);
-                }else{
+                if (clip) {
+                    els = splitText(clipboard.replaceAll("\n", ""), Config.textsClipLimit);
+                } else {
                     els = List.of(clipboard);
                 }
 
@@ -47,24 +50,30 @@ public abstract class Texts {
                 ClientPlayerEntity player = MinecraftClient.getInstance().player;
 
                 int i = 0;
-                for(int slot = 0; slot < 36; slot++) {
-                    if(player.getInventory().getStack(slot).isEmpty()) {
+                for (int slot = 0; slot < 36; slot++) {
+                    if (player.getInventory().getStack(slot).isEmpty()) {
                         slots[i] = slot;
                         i++;
-                        if(i >= slots.length) break;
+                        if (i >= slots.length) {
+                            break;
+                        }
                     }
                 }
 
-                if(i + 1 < els.size()) return "> Нет свободных слотов в инвентаре!";
+                if (i + 1 < els.size()) {
+                    return "> Нет свободных слотов в инвентаре!";
+                }
 
                 i = 0;
 
-                for(String el : els) {
+                for (String el : els) {
                     el = el.replaceAll("[\\x00-\\x1F\\x7F§]", "");
                     String inTag = el.replaceAll("\"", "\\\\\"");
                     String inDisplay = el.replaceAll("\"", "\\\\\\\\\"").replaceAll("'", "\\\\'");
 
-                    String nbt = "{display: {Name: '{\"italic\":false,\"text\":\"" + inDisplay + "\"}', Lore: ['{\"italic\":false,\"color\":\"#ABC4D6\",\"extra\":[\" \",{\"color\":\"yellow\",\"translate\":\"creative_plus.argument.text.parsing_type.legacy\"}],\"translate\":\"creative_plus.argument.text.parsing_type\"}', '{\"italic\":false,\"color\":\"gray\",\"translate\":\"creative_plus.argument.text.parsing_type.about.legacy\"}', '{\"italic\":false,\"color\":\"#ABC4D6\",\"translate\":\"creative_plus.argument.text.raw_view\"}', '{\"italic\":false,\"color\":\"white\",\"text\":\"" + inDisplay + "\"}']}, creative_plus: {value: {type: \"text\", text: \"" + inTag + "\", parsing: \"legacy\"}}}";
+                    String nbt = "{display: {Name: '{\"italic\":false,\"text\":\"" + inDisplay +
+                                 "\"}', Lore: ['{\"italic\":false,\"color\":\"#ABC4D6\",\"extra\":[\" \",{\"color\":\"yellow\",\"translate\":\"creative_plus.argument.text.parsing_type.legacy\"}],\"translate\":\"creative_plus.argument.text.parsing_type\"}', '{\"italic\":false,\"color\":\"gray\",\"translate\":\"creative_plus.argument.text.parsing_type.about.legacy\"}', '{\"italic\":false,\"color\":\"#ABC4D6\",\"translate\":\"creative_plus.argument.text.raw_view\"}', '{\"italic\":false,\"color\":\"white\",\"text\":\"" +
+                                 inDisplay + "\"}']}, creative_plus: {value: {type: \"text\", text: \"" + inTag + "\", parsing: \"legacy\"}}}";
                     ItemStack book = createNBTItemStack(new ItemStack(Items.BOOK), 1, nbt);
                     player.getInventory().setStack(slots[i], book);
                     i++;
@@ -75,7 +84,7 @@ public abstract class Texts {
                 return "> " + e.getMessage();
             }
         }
-        return "> Неудалось получить текст из буфера обмена";
+        return "> Не удалось получить текст из буфера обмена";
     }
 
     public static List<String> splitText(String text, int segmentLength) {

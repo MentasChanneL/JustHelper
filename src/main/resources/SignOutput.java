@@ -1,7 +1,10 @@
-import net.minecraft.text.*;
-import net.minecraft.util.Formatting;
-
 import java.util.HashMap;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 public class SignOutput {
 
@@ -28,7 +31,7 @@ public class SignOutput {
 
     private String toMini(String str) {
         String result = str;
-        for(String key : miniSymvols.keySet()) {
+        for (String key : miniSymvols.keySet()) {
             result = result.replaceAll(key, miniSymvols.get(key));
         }
         return result;
@@ -43,27 +46,27 @@ public class SignOutput {
         }
         String xyz = x + " " + y + " " + z;
         hoverText.append(
-                Text.literal("¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\n" + xyz)
-                        .append( Text.literal(" | " + mathFloor + " этаж") )
-                        .setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY)) );
+            Text.literal("¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\n" + xyz)
+                .append(Text.literal(" | " + mathFloor + " этаж"))
+                .setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY)));
 
         MutableText text = Text
-                .literal("")
-                .append(Text.literal(floor).setStyle(Style.EMPTY.withColor(Formatting.YELLOW)))
-                .append(Text.literal(" (" + x + " " + y + " " + z + ")")
-                        .setStyle(Style.EMPTY
-                                .withColor(Formatting.AQUA)))
-                .append(Text
-                        .literal(" → ")
-                        .setStyle(Style.EMPTY
-                                .withColor(Formatting.YELLOW)))
-                .append(lines[0].copy().setStyle(
-                        Style.EMPTY.withColor(Formatting.WHITE)
-                ))
-                .setStyle( Style.EMPTY
-                        .withClickEvent( new ClickEvent( ClickEvent.Action.RUN_COMMAND, "/tp @s " + xyz))
-                        .withHoverEvent( new HoverEvent( HoverEvent.Action.SHOW_TEXT, hoverText ))
-                );
+            .literal("")
+            .append(Text.literal(floor).setStyle(Style.EMPTY.withColor(Formatting.YELLOW)))
+            .append(Text.literal(" (" + x + " " + y + " " + z + ")")
+                .setStyle(Style.EMPTY
+                    .withColor(Formatting.AQUA)))
+            .append(Text
+                .literal(" → ")
+                .setStyle(Style.EMPTY
+                    .withColor(Formatting.YELLOW)))
+            .append(lines[0].copy().setStyle(
+                Style.EMPTY.withColor(Formatting.WHITE)
+            ))
+            .setStyle(Style.EMPTY
+                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp @s " + xyz))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))
+            );
         return text;
     }
 }
