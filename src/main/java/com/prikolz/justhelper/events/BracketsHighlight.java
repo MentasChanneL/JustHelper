@@ -105,8 +105,9 @@ public class BracketsHighlight {
                     }
                 }
             }
+        } else {
+            HIGHLIGHTED_BLOCKS.clear();
         }
-
         return ActionResult.PASS;
     }
 
