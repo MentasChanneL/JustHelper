@@ -113,36 +113,18 @@ public class BracketsHighlight {
     public static void renderOutline(WorldRenderContext context) {
         ClientWorld world = context.world();
 
-        for (BlockPos pos : HIGHLIGHTED_BLOCKS) {
-            BlockState state = world.getBlockState(pos);
-
-            Color color = new Color(255, 255, 255, 127);
-            float[] colorComponents = new float[] {color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F, color.getAlpha() / 255F};
-
-            state.getOutlineShape(world, pos).forEachBox((minX, minY, minZ, maxX, maxY, maxZ) -> {
-                double zFightingOffset = 0.001;
-                Box box = new Box(
-                    (float) (pos.getX() + minX - zFightingOffset),
-                    (float) (pos.getY() + minY - zFightingOffset),
-                    (float) (pos.getZ() + minZ - zFightingOffset),
-                    (float) (pos.getX() + maxX + zFightingOffset),
-                    (float) (pos.getY() + maxY + zFightingOffset),
-                    (float) (pos.getZ() + maxZ + zFightingOffset)
-                );
-
-                renderOutlineHelper(context, box, colorComponents, 2f);
-            });
-        }
-    }
-
-    public static void renderOutlineHelper(WorldRenderContext context, Box box, float[] colorComponents, float lineWidth) {
         MatrixStack matrices = context.matrixStack();
         Vec3d camera = context.camera().getPos();
         Tessellator tessellator = RenderSystem.renderThreadTesselator();
         BufferBuilder buffer = tessellator.getBuffer();
 
+        Color color = new Color(255, 255, 0, 127);
+        float[] colorComponents = new float[] { color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f };
+
+        double zFightingOffset = 0.001;
+
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram);
-        RenderSystem.lineWidth(lineWidth);
+        RenderSystem.lineWidth(2.5f);
         RenderSystem.disableCull();
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
@@ -151,11 +133,27 @@ public class BracketsHighlight {
         matrices.translate(-camera.getX(), -camera.getY(), -camera.getZ());
 
         buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
-        WorldRenderer.drawBox(matrices, buffer, box, colorComponents[0], colorComponents[1], colorComponents[2], colorComponents[3]);
+
+        for (BlockPos pos : HIGHLIGHTED_BLOCKS) {
+            BlockState state = world.getBlockState(pos);
+
+            state.getOutlineShape(world, pos).forEachBox((minX, minY, minZ, maxX, maxY, maxZ) -> {
+                Box box = new Box(
+                    (float) (pos.getX() + minX - zFightingOffset),
+                    (float) (pos.getY() + minY - zFightingOffset),
+                    (float) (pos.getZ() + minZ - zFightingOffset),
+                    (float) (pos.getX() + maxX + zFightingOffset),
+                    (float) (pos.getY() + maxY + zFightingOffset),
+                    (float) (pos.getZ() + maxZ + zFightingOffset)
+                );
+                WorldRenderer.drawBox(matrices, buffer, box, colorComponents[0], colorComponents[1], colorComponents[2], colorComponents[3]);
+            });
+        }
+
         tessellator.draw();
 
         matrices.pop();
-        RenderSystem.lineWidth(1F);
+        RenderSystem.lineWidth(1f);
         RenderSystem.enableCull();
         RenderSystem.disableDepthTest();
         RenderSystem.disableBlend();
