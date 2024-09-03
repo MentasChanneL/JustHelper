@@ -1,5 +1,6 @@
 package com.prikolz.justhelper;
 
+import com.prikolz.justhelper.commands.EditItemCommand;
 import com.prikolz.justhelper.commands.JusthelperCommand;
 import com.prikolz.justhelper.commands.SignsCommand;
 import com.prikolz.justhelper.commands.TextsCommand;
@@ -22,6 +23,7 @@ public class Justhelper implements ModInitializer {
 		JusthelperCommand.register();
 		SignsCommand.register();
 		TextsCommand.register();
+		EditItemCommand.register();
 
         try {
             Config.initialize();
