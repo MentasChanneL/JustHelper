@@ -16,17 +16,19 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 
 import java.util.*;
 
 public class EditItemCommand {
-    private static Set<Character> tagWhitelist = initWL();
-    private static HashMap<String, String> operationSym = initOperationSym();
+    private static final Set<Character> tagWhitelist = initWL();
+    private static final HashMap<String, String> operationSym = initOperationSym();
 
-    private final static Set<Character> initWL() {
+    private static Set<Character> initWL() {
         Set<Character> result = new HashSet<>();
 
         result.add('a'); result.add('0');
@@ -135,65 +137,102 @@ public class EditItemCommand {
         LiteralArgumentBuilder<FabricClientCommandSource> manager =
                 ClientCommandManager.literal("edit")
                         .then( ClientCommandManager.literal("tag" )
-                                .then( ClientCommandManager.argument("name", StringArgumentType.string())
-                                        .then( ClientCommandManager.argument("value", StringArgumentType.greedyString() )
+                                .then(ClientCommandManager.literal("add")
+                                        .then( ClientCommandManager.argument("name", StringArgumentType.string())
+                                                .then( ClientCommandManager.argument("value", StringArgumentType.greedyString() )
+                                                        .executes(context -> {
+                                                            if( msgItemIsNull(context) ) return 0;
+                                                            ItemStack item = getItemMainHand();
+                                                            String keyArg = StringArgumentType.getString(context, "name");
+                                                            for(char c : keyArg.toCharArray()) {
+                                                                if(!tagWhitelist.contains(c)) {
+                                                                    context.getSource().sendFeedback(Text.literal("JustHelper > Название тега содержит недопустимые символы! Название может содержать только: маленькие латинские(английские) буквы, цифры, нижнее подчеркивание или тире.").setStyle(JustCommand.error));
+                                                                    return 0;
+                                                                }
+                                                            }
+                                                            String key = "justcreativeplus:" + keyArg;
+                                                            String value = StringArgumentType.getString(context, "value");
+                                                            NbtCompound[] tags = getNbt("PublicBukkitValues", item);
+                                                            NbtCompound tag;
+                                                            if(tags == null) {
+                                                                tag = new NbtCompound();
+                                                            }else{
+                                                                tag = tags[tags.length - 1];
+                                                            }
+                                                            tag.putString(key, value);
+                                                            item.setSubNbt("PublicBukkitValues", tag);
+                                                            setItemMainHand(item);
+                                                            context.getSource().sendFeedback(
+                                                                    Text.literal("")
+                                                                            .append(Text.literal("Предмету установлен тег ").setStyle(JustCommand.sucsess))
+                                                                            .append(Text.literal(keyArg).setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
+                                                                            .append(Text.literal(" со значением ").setStyle(JustCommand.sucsess))
+                                                                            .append(Text.literal(value).setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
+                                                            );
+                                                            return 1;
+                                                        })
+                                                )
+                                        )
+                                )
+                                .then(ClientCommandManager.literal("remove")
+                                        .then( ClientCommandManager.argument("name", StringArgumentType.string())
                                                 .executes(context -> {
                                                     if( msgItemIsNull(context) ) return 0;
                                                     ItemStack item = getItemMainHand();
                                                     String keyArg = StringArgumentType.getString(context, "name");
-                                                    for(char c : keyArg.toCharArray()) {
-                                                        if(!tagWhitelist.contains(c)) {
-                                                            context.getSource().sendFeedback(Text.literal("JustHelper > Название тега содержит недопустимые символы! Название может содержать только: маленькие латинские(английские) буквы, цифры, нижнее подчеркивание или тире.").setStyle(JustCommand.error));
-                                                            return 0;
-                                                        }
-                                                    }
                                                     String key = "justcreativeplus:" + keyArg;
-                                                    String value = StringArgumentType.getString(context, "value");
-                                                    NbtCompound[] tags = getNbt("PublicBukkitValues", item);
-                                                    NbtCompound tag;
+                                                    NbtCompound tags = item.getNbt();
                                                     if(tags == null) {
-                                                        tag = new NbtCompound();
-                                                    }else{
-                                                        tag = tags[tags.length - 1];
+                                                        context.getSource().sendFeedback(Text.literal("Тег " + keyArg + " не найден!").setStyle(JustCommand.warn));
+                                                        return 0;
                                                     }
-                                                    tag.putString(key, value);
-                                                    item.setSubNbt("PublicBukkitValues", tag);
+                                                    NbtCompound bukkitSector = tags.getCompound("PublicBukkitValues");
+                                                    if(bukkitSector.isEmpty() || !bukkitSector.getKeys().contains(key)) {
+                                                        context.getSource().sendFeedback(Text.literal("Тег " + keyArg + " не найден!").setStyle(JustCommand.warn));
+                                                        return 0;
+                                                    }
+                                                    bukkitSector.remove(key);
+                                                    tags.put("PublicBukkitValues", bukkitSector);
+                                                    item.setNbt(tags);
                                                     setItemMainHand(item);
                                                     context.getSource().sendFeedback(
                                                             Text.literal("")
-                                                                    .append(Text.literal("Предмету установлен тег ").setStyle(JustCommand.sucsess))
+                                                                    .append(Text.literal("Тег ").setStyle(JustCommand.sucsess))
                                                                     .append(Text.literal(keyArg).setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
-                                                                    .append(Text.literal(" со значением ").setStyle(JustCommand.sucsess))
-                                                                    .append(Text.literal(value).setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
+                                                                    .append(Text.literal(" удален!").setStyle(JustCommand.sucsess))
                                                     );
                                                     return 1;
                                                 })
                                         )
-                                        .executes(context -> {
-                                            if( msgItemIsNull(context) ) return 0;
-                                            ItemStack item = getItemMainHand();
-                                            String key = StringArgumentType.getString(context, "name");
-                                            NbtCompound[] tags = getNbt("PublicBukkitValues", item);
-                                            if(tags == null || tags[tags.length - 1] == null || tags[tags.length - 1].isEmpty() || !(tags[tags.length - 1].getKeys().contains("justcreativeplus:" + key))) {
-                                                context.getSource().sendFeedback(Text.literal("JustHelper > Тег не найден! Если вы хотите установить тег, укажите значение.").setStyle(JustCommand.warn));
-                                                return 0;
-                                            }
-                                            String tag = tags[tags.length - 1].getString("justcreativeplus:" + key);
-                                            String value = tag;
-                                            if(value.length() > 10) value = value.substring(0, 10) + "...";
-                                            context.getSource().sendFeedback(
-                                                    Text.literal( key ).setStyle(Style.EMPTY
-                                                            .withColor(Formatting.YELLOW)
-                                                            .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, key))
-                                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать ключ\n" + key))))
-                                                            .append(Text.literal(" = ").setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
-                                                            .append(Text.literal(value).setStyle(Style.EMPTY
-                                                                    .withColor(Formatting.GOLD)
-                                                                    .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, tag))
-                                                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать значение\n" + tag)))))
-                                            );
-                                            return 1;
-                                        })
+                                )
+                                .then(ClientCommandManager.literal("get")
+                                        .then( ClientCommandManager.argument("name", StringArgumentType.string())
+                                                .executes(context -> {
+                                                    if( msgItemIsNull(context) ) return 0;
+                                                    ItemStack item = getItemMainHand();
+                                                    String key = StringArgumentType.getString(context, "name");
+                                                    NbtCompound[] tags = getNbt("PublicBukkitValues", item);
+                                                    if(tags == null || tags[tags.length - 1] == null || tags[tags.length - 1].isEmpty() || !(tags[tags.length - 1].getKeys().contains("justcreativeplus:" + key))) {
+                                                        context.getSource().sendFeedback(Text.literal("JustHelper > Тег не найден! Если вы хотите установить тег, укажите значение.").setStyle(JustCommand.warn));
+                                                        return 0;
+                                                    }
+                                                    String tag = tags[tags.length - 1].getString("justcreativeplus:" + key);
+                                                    String value = tag;
+                                                    if(value.length() > 10) value = value.substring(0, 10) + "...";
+                                                    context.getSource().sendFeedback(
+                                                            Text.literal( key ).setStyle(Style.EMPTY
+                                                                            .withColor(Formatting.YELLOW)
+                                                                            .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, key))
+                                                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать ключ\n" + key))))
+                                                                    .append(Text.literal(" = ").setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
+                                                                    .append(Text.literal(value).setStyle(Style.EMPTY
+                                                                            .withColor(Formatting.GOLD)
+                                                                            .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, tag))
+                                                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать значение\n" + tag)))))
+                                                    );
+                                                    return 1;
+                                                })
+                                        )
                                 )
                                 .executes(context -> {
                                     if( msgItemIsNull(context) ) return 0;
@@ -464,13 +503,112 @@ public class EditItemCommand {
                                     return 1;
                                 })
                         )
+
+                        .then(ClientCommandManager.literal("lore")
+                                .then(ClientCommandManager.literal("clear")
+                                        .executes(context -> {
+                                            if( msgItemIsNull(context) ) return 0;
+                                            ItemStack item = getItemMainHand();
+                                            clearLore(item);
+                                            setItemMainHand(item);
+                                            context.getSource().sendFeedback(Text.literal("Описание очищено").setStyle(JustCommand.warn));
+                                            return 1;
+                                        })
+                                )
+                                .then(ClientCommandManager.literal("add")
+                                        .then(ClientCommandManager.argument("lines", StringArgumentType.greedyString())
+                                                .executes(context -> {
+                                                    if( msgItemIsNull(context) ) return 0;
+                                                    ItemStack item = getItemMainHand();
+                                                    String line = StringArgumentType.getString(context, "lines");
+                                                    boolean isJson = line.startsWith("{");
+                                                    String[] lines = line.split("\\\\n");
+                                                    String err = addLoreLines(item, 0, lines, true, isJson);
+                                                    if(!err.isEmpty()) {
+                                                        context.getSource().sendFeedback(Text.literal(err).setStyle(JustCommand.error));
+                                                        return 0;
+                                                    }
+                                                    context.getSource().sendFeedback(Text.literal("Добавлены новые строчки").setStyle(JustCommand.sucsess));
+                                                    setItemMainHand(item);
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(ClientCommandManager.literal("insert")
+                                        .then(ClientCommandManager.argument("line", IntegerArgumentType.integer())
+                                                .then(ClientCommandManager.argument("lines", StringArgumentType.greedyString())
+                                                        .executes(context -> {
+                                                            if( msgItemIsNull(context) ) return 0;
+                                                            ItemStack item = getItemMainHand();
+                                                            String line = StringArgumentType.getString(context, "lines");
+                                                            int pos = IntegerArgumentType.getInteger(context, "line");
+                                                            boolean isJson = line.startsWith("{");
+                                                            String[] lines = line.split("\\\\n");
+                                                            String err = addLoreLines(item, pos, lines, true, isJson);
+                                                            if(!err.isEmpty()) {
+                                                                context.getSource().sendFeedback(Text.literal(err).setStyle(JustCommand.error));
+                                                                return 0;
+                                                            }
+                                                            context.getSource().sendFeedback(Text.literal("Вставлены новые строчки").setStyle(JustCommand.sucsess));
+                                                            setItemMainHand(item);
+                                                            return 1;
+                                                        })
+                                                )
+                                        )
+                                )
+                                .then(ClientCommandManager.literal("replace")
+                                        .then(ClientCommandManager.argument("line", IntegerArgumentType.integer())
+                                                .then(ClientCommandManager.argument("lines", StringArgumentType.greedyString())
+                                                        .executes(context -> {
+                                                            if( msgItemIsNull(context) ) return 0;
+                                                            ItemStack item = getItemMainHand();
+                                                            String line = StringArgumentType.getString(context, "lines");
+                                                            int pos = IntegerArgumentType.getInteger(context, "line");
+                                                            boolean isJson = line.startsWith("{");
+                                                            String[] lines = line.split("\\\\n");
+                                                            String err = addLoreLines(item, pos, lines, false, isJson);
+                                                            if(!err.isEmpty()) {
+                                                                context.getSource().sendFeedback(Text.literal(err).setStyle(JustCommand.error));
+                                                                return 0;
+                                                            }
+                                                            context.getSource().sendFeedback(Text.literal("Строчки заменены").setStyle(JustCommand.sucsess));
+                                                            setItemMainHand(item);
+                                                            return 1;
+                                                        })
+                                                )
+                                        )
+                                )
+                                .then(ClientCommandManager.literal("remove")
+                                        .then(ClientCommandManager.argument("line", IntegerArgumentType.integer())
+                                                .executes(context -> {
+                                                    if( msgItemIsNull(context) ) return 0;
+                                                    ItemStack item = getItemMainHand();
+                                                    int pos = IntegerArgumentType.getInteger(context, "line");
+                                                    String err = removeLoreLine(item,pos);
+                                                    if(!err.isEmpty()) {
+                                                        context.getSource().sendFeedback(Text.literal(err).setStyle(JustCommand.warn));
+                                                        return 0;
+                                                    }
+                                                    setItemMainHand(item);
+                                                    if(pos == 0) {
+                                                        context.getSource().sendFeedback(Text.literal("Последняя строчка удалена").setStyle(JustCommand.sucsess));
+                                                        return 1;
+                                                    }
+                                                    context.getSource().sendFeedback(Text.literal("Строчка " + pos + " удалена").setStyle(JustCommand.sucsess));
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                        )
+
                         .executes(context -> {
                             context.getSource().sendFeedback(
                                     Text.literal("JustHelper > Аргументы команды edit:").setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
-                                            .append( Text.literal("\ntag - Добавить/Получить кастомный тег предмета").setStyle(JustCommand.gold))
-                                            .append( Text.literal("\nrename - Изменить имя предмета. Поддерживаются коды цветов & и плейсхолдеры %empty%, %space%").setStyle(JustCommand.gold))
-                                            .append( Text.literal("\nmodel - Изменить/Получить модель предмета(CustomModelData)").setStyle(JustCommand.gold) )
-                                            .append( Text.literal("\nattribute - Добавляет/Удаляет/Получает атрибуты предмета.").setStyle(JustCommand.gold) )
+                                            .append( Text.literal("\n\ntag - Добавить/Удалить/Получить кастомный тег предмета").setStyle(JustCommand.gold))
+                                            .append( Text.literal("\n\nrename - Изменить имя предмета. Поддерживаются коды цветов & и плейсхолдеры %empty%, %space%").setStyle(JustCommand.gold))
+                                            .append( Text.literal("\n\nmodel - Изменить/Получить модель предмета(CustomModelData)").setStyle(JustCommand.gold) )
+                                            .append( Text.literal("\n\nattribute - Добавляет/Удаляет/Получает атрибуты предмета.").setStyle(JustCommand.gold) )
+                                            .append( Text.literal("\n\nflag - Добавляет/Удаляет/Получает флаги скрытия предмета.").setStyle(JustCommand.gold) )
                             );
                             return 1;
                         })
@@ -578,5 +716,90 @@ public class EditItemCommand {
         nbt.putInt("HideFlags", nbt.getInt("HideFlags") + flagsList.get(key).getFlag());
         item.setNbt(nbt);
         return true;
+    }
+
+    private static String addLoreLines(ItemStack item, int pos, String[] lines, boolean isNew, boolean isJson) {
+        if(pos < 0) return "Номер линии должен быть больше -1!";
+        NbtCompound nbt = item.getNbt();
+        if(nbt == null) nbt = new NbtCompound();
+        NbtCompound display = nbt.getCompound("display");
+        NbtList list = display.getList("Lore", NbtElement.STRING_TYPE);
+        if(isNew) {
+            if(pos == 0) {
+                pos = list.size();
+            }else {
+                pos -= 1;
+                while(pos > list.size()) {
+                    list.add(NbtString.of("{\"text\":\"\"}"));
+                }
+            }
+            if (isJson) {
+                for (String line : lines) {
+                    list.add(pos, NbtString.of(line));
+                    pos++;
+                }
+            } else {
+                for (String line : lines) {
+                    list.add(pos, NbtString.of(lineToJson(line)));
+                    pos++;
+                }
+            }
+        }else{
+            if(pos == 0) {
+                pos = list.size() - 1;
+                if(pos < 0) pos = 0;
+            }else {
+                pos -= 1;
+                while(pos + lines.length > list.size()) {
+                    list.add(NbtString.of("{\"text\":\"\"}"));
+                }
+            }
+            if (isJson) {
+                for (String line : lines) {
+                    list.set(pos, NbtString.of(line));
+                    pos++;
+                }
+            } else {
+                for (String line : lines) {
+                    list.set(pos, NbtString.of(lineToJson(line)));
+                    pos++;
+                }
+            }
+        }
+        display.put("Lore", list);
+        nbt.put("display", display);
+        item.setNbt(nbt);
+        return "";
+    }
+
+    private static void clearLore(ItemStack item) {
+        NbtCompound nbt = item.getNbt();
+        if(nbt == null) return;
+        NbtCompound display = nbt.getCompound("display");
+        if(display.isEmpty()) return;
+        display.remove("Lore");
+        nbt.put("display", display);
+        item.setNbt(nbt);
+    }
+
+    private static String removeLoreLine(ItemStack item, int line) {
+        if(line < 0) return "Номер линии должен быть больше -1!";
+        NbtCompound nbt = item.getNbt();
+        if(nbt == null) return "Описание не заданно";
+        NbtCompound display = nbt.getCompound("display");
+        if(display.isEmpty()) return "Описание не заданно";
+        NbtList list = display.getList("Lore", NbtElement.STRING_TYPE);
+        if(line > list.size()) return "Линия еще не задана";
+        if(line == 0) line = list.size();
+        line -= 1;
+        list.remove(line);
+        display.put("Lore", list);
+        nbt.put("display", display);
+        item.setNbt(nbt);
+        return "";
+    }
+
+    private static String lineToJson(String line) {
+        return "{\"text\":\"" + line.replaceAll("&", "§").replaceAll("%space%", " ").replaceAll("%empty%", "") + "\"}";
     }
 }
