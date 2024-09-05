@@ -16,6 +16,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -144,6 +145,18 @@ public class EditItemCommand {
 
         for(RegistryKey<Enchantment> key : Registries.ENCHANTMENT.getKeys()) {
             result.add(key.getValue().getPath());
+        }
+
+        return result;
+    }
+
+    private static final HashMap<String, Item> materialMap = initMaterialMap();
+
+    private static HashMap<String, Item> initMaterialMap() {
+        HashMap<String, Item> result = new HashMap<>();
+
+        for(RegistryKey<Item> key : Registries.ITEM.getKeys()) {
+            result.put( key.getValue().getPath(), Registries.ITEM.get(key) );
         }
 
         return result;
@@ -733,6 +746,47 @@ public class EditItemCommand {
                                 })
                         )
 
+                        .then(ClientCommandManager.literal("material")
+                                .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, materialMap.keySet()))
+                                        .executes(context -> {
+                                            if( msgItemIsNull(context) ) return 0;
+                                            String id = VariantsArgumentType.getParameter(context, "id");
+                                            setItemMainHand( setItemMaterial(getItemMainHand(), id) );
+                                            context.getSource().sendFeedback(
+                                                    Text.literal("Тип предмета установлен на ").setStyle(JustCommand.white)
+                                                            .append(Text.literal(id).setStyle(JustCommand.sucsess))
+                                            );
+                                            return 1;
+                                        })
+                                )
+                        )
+
+                        .then(ClientCommandManager.literal("unbreakable")
+                                .then(ClientCommandManager.argument("enable", new VariantsArgumentType("Ожидалось true/false", false, "true", "false"))
+                                        .executes(context -> {
+                                            if( msgItemIsNull(context) ) return 0;
+                                            ItemStack item = getItemMainHand();
+                                            String mode = VariantsArgumentType.getParameter(context, "enable");
+                                            boolean set = false;
+                                            if(mode.equals("true")) set = true;
+                                            setItemUnbreakable(item, set);
+                                            setItemMainHand(item);
+                                            if(set) {
+                                                context.getSource().sendFeedback(
+                                                        Text.literal("Неразрушаемость предмета").setStyle(JustCommand.white)
+                                                                .append(Text.literal(" включена").setStyle(JustCommand.sucsess))
+                                                );
+                                                return 1;
+                                            }
+                                            context.getSource().sendFeedback(
+                                                    Text.literal("Неразрушаемость предмета").setStyle(JustCommand.white)
+                                                            .append(Text.literal(" выключена").setStyle(JustCommand.warn))
+                                            );
+                                            return 1;
+                                        })
+                                )
+                        )
+
                         .executes(context -> {
                             context.getSource().sendFeedback(
                                     Text.literal("JustHelper > Аргументы команды edit:").setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
@@ -998,5 +1052,21 @@ public class EditItemCommand {
         }
 
         return result;
+    }
+
+    private static ItemStack setItemMaterial(ItemStack item, String material) {
+        ItemStack newItem = new ItemStack(materialMap.get(material));
+        NbtCompound nbt = item.getNbt();
+        if(nbt != null) newItem.setNbt(nbt);
+        return newItem;
+    }
+
+    private static void setItemUnbreakable(ItemStack item, boolean on) {
+        NbtCompound nbt = item.getNbt();
+        if(nbt == null) nbt = new NbtCompound();
+        byte set = 1;
+        if(!on) set = 0;
+        nbt.putByte("Unbreakable", set);
+        item.setNbt(nbt);
     }
 }
