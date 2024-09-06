@@ -776,6 +776,8 @@ public class EditItemCommand {
                                             .append( Text.literal("\n\nflag - Добавляет/Удаляет/Получает флаги скрытия предмета.").setStyle(JustCommand.gold) )
                                             .append( Text.literal("\n\nlore - Позволяет изменять описание предмета.").setStyle(JustCommand.gold) )
                                             .append( Text.literal("\n\ncolor - Установить цвет предмета. Например, для кожанной брони.").setStyle(JustCommand.gold) )
+                                            .append( Text.literal("\n\nunbreakable - Включить/Выключить неразрушаемость предмета.").setStyle(JustCommand.gold) )
+                                            .append( Text.literal("\n\nmaterial - Установить тип предмета.").setStyle(JustCommand.gold) )
                             );
                             return 1;
                         })
