@@ -3,8 +3,7 @@
   "package": "com.prikolz.justhelper.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "TeleportConfirm",
-    "BlockEntityLoad"
+    "TeleportConfirm"
   ],
   "injectors": {
     "defaultRequire": 1

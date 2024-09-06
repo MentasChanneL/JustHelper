@@ -788,21 +788,6 @@ public class EditItemCommand {
         context.getSource().sendFeedback(Text.literal("JustHelper > Не получилось редактировать. Возьмите предмет в руку!").setStyle(JustCommand.error));
         return true;
     }
-    private static NbtCompound[] getNbt(String path, ItemStack item) {
-        String[] args = path.split("\\.");
-        NbtCompound[] result = new NbtCompound[args.length];
-        NbtCompound main = item.getNbt();
-        if(main == null) return null;
-        int i = 0;
-        NbtCompound current = main;
-        for(String arg : args) {
-            current = current.getCompound(arg);
-            if(current == null) return null;
-            result[i] = current;
-            i++;
-        }
-        return result;
-    }
 
     private static ItemStack getItemMainHand() {
         try {
