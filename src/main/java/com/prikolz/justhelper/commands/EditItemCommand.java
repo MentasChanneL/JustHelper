@@ -172,29 +172,19 @@ public class EditItemCommand {
                                                         .executes(context -> {
                                                             if( msgItemIsNull(context) ) return 0;
                                                             ItemStack item = getItemMainHand();
-                                                            String keyArg = StringArgumentType.getString(context, "name");
-                                                            for(char c : keyArg.toCharArray()) {
+                                                            String key = StringArgumentType.getString(context, "name");
+                                                            String value = StringArgumentType.getString(context, "value");
+                                                            for(char c : key.toCharArray()) {
                                                                 if(!tagWhitelist.contains(c)) {
                                                                     context.getSource().sendFeedback(Text.literal("JustHelper > Название тега содержит недопустимые символы! Название может содержать только: маленькие латинские(английские) буквы, цифры, нижнее подчеркивание или тире.").setStyle(JustCommand.error));
                                                                     return 0;
                                                                 }
                                                             }
-                                                            String key = "justcreativeplus:" + keyArg;
-                                                            String value = StringArgumentType.getString(context, "value");
-                                                            NbtCompound[] tags = getNbt("PublicBukkitValues", item);
-                                                            NbtCompound tag;
-                                                            if(tags == null) {
-                                                                tag = new NbtCompound();
-                                                            }else{
-                                                                tag = tags[tags.length - 1];
-                                                            }
-                                                            tag.putString(key, value);
-                                                            item.setSubNbt("PublicBukkitValues", tag);
-                                                            setItemMainHand(item);
+                                                            addItemTag(item, key, value);
                                                             context.getSource().sendFeedback(
                                                                     Text.literal("")
                                                                             .append(Text.literal("Предмету установлен тег ").setStyle(JustCommand.sucsess))
-                                                                            .append(Text.literal(keyArg).setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
+                                                                            .append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
                                                                             .append(Text.literal(" со значением ").setStyle(JustCommand.sucsess))
                                                                             .append(Text.literal(value).setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
                                                             );
@@ -208,29 +198,24 @@ public class EditItemCommand {
                                                 .executes(context -> {
                                                     if( msgItemIsNull(context) ) return 0;
                                                     ItemStack item = getItemMainHand();
-                                                    String keyArg = StringArgumentType.getString(context, "name");
-                                                    String key = "justcreativeplus:" + keyArg;
-                                                    NbtCompound tags = item.getNbt();
-                                                    if(tags == null) {
-                                                        context.getSource().sendFeedback(Text.literal("Тег " + keyArg + " не найден!").setStyle(JustCommand.warn));
-                                                        return 0;
+                                                    String key = StringArgumentType.getString(context, "name");
+                                                    boolean deleted = removeItemTag(item, key);
+                                                    if(deleted) {
+                                                        context.getSource().sendFeedback(
+                                                                Text.literal("")
+                                                                        .append(Text.literal("Тег ").setStyle(JustCommand.sucsess))
+                                                                        .append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
+                                                                        .append(Text.literal(" удален!").setStyle(JustCommand.sucsess))
+                                                        );
+                                                        return 1;
                                                     }
-                                                    NbtCompound bukkitSector = tags.getCompound("PublicBukkitValues");
-                                                    if(bukkitSector.isEmpty() || !bukkitSector.getKeys().contains(key)) {
-                                                        context.getSource().sendFeedback(Text.literal("Тег " + keyArg + " не найден!").setStyle(JustCommand.warn));
-                                                        return 0;
-                                                    }
-                                                    bukkitSector.remove(key);
-                                                    tags.put("PublicBukkitValues", bukkitSector);
-                                                    item.setNbt(tags);
-                                                    setItemMainHand(item);
                                                     context.getSource().sendFeedback(
                                                             Text.literal("")
-                                                                    .append(Text.literal("Тег ").setStyle(JustCommand.sucsess))
-                                                                    .append(Text.literal(keyArg).setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
-                                                                    .append(Text.literal(" удален!").setStyle(JustCommand.sucsess))
+                                                                    .append(Text.literal("Тег ").setStyle(JustCommand.warn))
+                                                                    .append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
+                                                                    .append(Text.literal(" не установлен!").setStyle(JustCommand.warn))
                                                     );
-                                                    return 1;
+                                                    return 0;
                                                 })
                                         )
                                 )
@@ -240,13 +225,12 @@ public class EditItemCommand {
                                                     if( msgItemIsNull(context) ) return 0;
                                                     ItemStack item = getItemMainHand();
                                                     String key = StringArgumentType.getString(context, "name");
-                                                    NbtCompound[] tags = getNbt("PublicBukkitValues", item);
-                                                    if(tags == null || tags[tags.length - 1] == null || tags[tags.length - 1].isEmpty() || !(tags[tags.length - 1].getKeys().contains("justcreativeplus:" + key))) {
-                                                        context.getSource().sendFeedback(Text.literal("JustHelper > Тег не найден! Если вы хотите установить тег, укажите значение.").setStyle(JustCommand.warn));
+                                                    HashMap<String, String> tags = getItemTags(item);
+                                                    if(!tags.containsKey(key)) {
+                                                        context.getSource().sendFeedback(Text.literal("JustHelper > Тег не найден!").setStyle(JustCommand.warn));
                                                         return 0;
                                                     }
-                                                    String tag = tags[tags.length - 1].getString("justcreativeplus:" + key);
-                                                    String value = tag;
+                                                    String value = tags.get(key);
                                                     if(value.length() > 10) value = value.substring(0, 10) + "...";
                                                     context.getSource().sendFeedback(
                                                             Text.literal( key ).setStyle(Style.EMPTY
@@ -256,8 +240,8 @@ public class EditItemCommand {
                                                                     .append(Text.literal(" = ").setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
                                                                     .append(Text.literal(value).setStyle(Style.EMPTY
                                                                             .withColor(Formatting.GOLD)
-                                                                            .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, tag))
-                                                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать значение\n" + tag)))))
+                                                                            .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, key))
+                                                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать значение\n" + key)))))
                                                     );
                                                     return 1;
                                                 })
@@ -266,26 +250,21 @@ public class EditItemCommand {
                                 .executes(context -> {
                                     if( msgItemIsNull(context) ) return 0;
                                     ItemStack item = getItemMainHand();
-                                    NbtCompound[] tags = getNbt("PublicBukkitValues", item);
-                                    if(tags == null || tags[tags.length - 1] == null || tags[tags.length - 1].isEmpty()) {
+                                    HashMap<String, String> tags = getItemTags(item);
+                                    if(tags.isEmpty()) {
                                         context.getSource().sendFeedback(Text.literal("JustHelper > Теги не найдены").setStyle(JustCommand.warn));
                                         return 0;
                                     }
-                                    NbtCompound tag = tags[tags.length - 1];
-                                    Set<String> keys = tag.getKeys();
-                                    context.getSource().sendFeedback(Text.literal(""));
-                                    context.getSource().sendFeedback(Text.literal("Установленные теги предмета:"));
-                                    context.getSource().sendFeedback(Text.literal("⏷"));
-                                    for(String key : keys) {
-                                        String cutKey = key.substring(17);
-                                        String value = tag.getString(key);
+                                    context.getSource().sendFeedback(Text.literal("\nУстановленные теги предмета:\n⏷"));
+                                    for(String key : tags.keySet()) {
+                                        String value = tags.get(key);
                                         String cutValue = value;
                                         if(cutValue.length() > 10) cutValue = cutValue.substring(0, 10) + "...";
                                         context.getSource().sendFeedback(
                                                 Text.literal(" • ").setStyle(Style.EMPTY.withColor(Formatting.WHITE))
-                                                        .append(cutKey).setStyle(Style.EMPTY
-                                                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать ключ\n" + cutKey)))
-                                                                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, cutKey))
+                                                        .append(key).setStyle(Style.EMPTY
+                                                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать ключ\n" + key)))
+                                                                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, key))
                                                                 .withColor(Formatting.YELLOW)
                                                         )
                                                         .append(Text.literal(" = ").setStyle(Style.EMPTY
@@ -1068,5 +1047,39 @@ public class EditItemCommand {
         if(!on) set = 0;
         nbt.putByte("Unbreakable", set);
         item.setNbt(nbt);
+    }
+
+    private static void addItemTag(ItemStack item, String key, String value) {
+        NbtCompound nbt = item.getNbt();
+        if(nbt == null) nbt = new NbtCompound();
+        NbtCompound values = nbt.getCompound("PublicBukkitValues");
+        values.putString("justcreativeplus:" + key, value);
+        nbt.put("PublicBukkitValues", values);
+        item.setNbt(nbt);
+    }
+
+    private static boolean removeItemTag(ItemStack item, String key) {
+        NbtCompound nbt = item.getNbt();
+        if(nbt == null) return false;
+        NbtCompound values = nbt.getCompound("PublicBukkitValues");
+        if(values.isEmpty() || !values.contains("justcreativeplus:" + key)) return false;
+        values.remove("justcreativeplus:" + key);
+        nbt.put("PublicBukkitValues", values);
+        item.setNbt(values);
+        return true;
+    }
+
+    private static HashMap<String, String> getItemTags(ItemStack item) {
+        HashMap<String, String> result = new HashMap<>();
+        NbtCompound nbt = item.getNbt();
+        if(nbt == null) return result;
+        NbtCompound values = nbt.getCompound("PublicBukkitValues");
+        if(values.isEmpty()) return result;
+        for(String key : values.getKeys()) {
+            if(!key.startsWith("justcreativeplus")) continue;
+            String value = values.getString(key);
+            result.put(key.substring(17), value);
+        }
+        return result;
     }
 }
