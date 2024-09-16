@@ -7,9 +7,13 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.prikolz.justhelper.commands.argumens.ColorArgumentType;
+import com.prikolz.justhelper.commands.argumens.DisplayJSONArgumentType;
 import com.prikolz.justhelper.commands.argumens.VariantsArgumentType;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EquipmentSlot;
@@ -18,10 +22,7 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.*;
@@ -240,8 +241,8 @@ public class EditItemCommand {
                                                                     .append(Text.literal(" = ").setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
                                                                     .append(Text.literal(value).setStyle(Style.EMPTY
                                                                             .withColor(Formatting.GOLD)
-                                                                            .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, key))
-                                                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать значение\n" + key)))))
+                                                                            .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, value))
+                                                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать значение\n" + value)))))
                                                     );
                                                     return 1;
                                                 })
@@ -281,20 +282,66 @@ public class EditItemCommand {
                                 })
                         )
                         .then( ClientCommandManager.literal("rename" )
-                                .then(ClientCommandManager.argument("name", StringArgumentType.greedyString())
-                                        .executes(context -> {
-                                            if( msgItemIsNull(context) ) return 0;
-                                            ItemStack item = getItemMainHand();
-                                            String arg = StringArgumentType.getString(context, "name");
-                                            Text name = Text.literal(arg.replaceAll("&", "§").replaceAll("%space%", " ").replaceAll("%empty%", ""));
-                                            item.setCustomName(name);
-                                            setItemMainHand(item);
-                                            context.getSource().sendFeedback(
-                                                    Text.literal("Заданно имя предмета: ").setStyle(Style.EMPTY.withColor(Formatting.WHITE))
-                                                            .append(name)
-                                            );
-                                            return 1;
-                                        })
+                                .then(ClientCommandManager.literal("json")
+                                        .then(ClientCommandManager.argument("json", new DisplayJSONArgumentType())
+                                                .executes(context -> {
+                                                    if( msgItemIsNull(context) ) return 0;
+                                                    ItemStack item = getItemMainHand();
+                                                    String name = DisplayJSONArgumentType.getDisplay(context, "json");
+                                                    setItemMainHand( setItemName(name, item) );
+                                                    context.getSource().sendFeedback(
+                                                            Text.literal("Заданно имя предмета: ").setStyle(Style.EMPTY.withColor(Formatting.WHITE))
+                                                                    .append(Text.literal(name).setStyle(
+                                                                            JustCommand.sucsess
+                                                                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Копировать: " + name)))
+                                                                                    .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, name))
+                                                                            ))
+                                                    );
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(ClientCommandManager.literal("plain")
+                                        .then(ClientCommandManager.argument("name", StringArgumentType.greedyString())
+                                                .executes(context -> {
+                                                    if( msgItemIsNull(context) ) return 0;
+                                                    ItemStack item = getItemMainHand();
+                                                    String name = StringArgumentType.getString(context, "name");
+                                                    String formatted = name.replaceAll("%space%", " ").replaceAll("&", "§");
+                                                    setItemMainHand( setItemName("{\"text\":\"" + formatted + "\", \"italic\":false}", item) );
+                                                    context.getSource().sendFeedback(
+                                                            Text.literal("Заданно имя предмета: ").setStyle(Style.EMPTY.withColor(Formatting.WHITE))
+                                                                    .append(Text.literal(formatted).setStyle(Style.EMPTY
+                                                                            .withHoverEvent( new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Копировать: " + name)))
+                                                                            .withClickEvent( new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, name) )
+                                                                    ))
+                                                    );
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(ClientCommandManager.literal("style")
+                                        .then(ClientCommandManager.argument("styledText", StringArgumentType.greedyString())
+                                                .executes(context -> {
+                                                    if( msgItemIsNull(context) ) return 0;
+                                                    ItemStack item = getItemMainHand();
+                                                    String name = StringArgumentType.getString(context, "styledText");
+                                                    MiniMessage mm = MiniMessage.miniMessage();
+                                                    Component component = mm.deserialize(name.replaceAll("%space%", " "));
+                                                    setItemMainHand( setItemName(
+                                                            JSONComponentSerializer.json().serialize(component),
+                                                            item
+                                                    ) );
+                                                    context.getSource().sendFeedback(
+                                                            Text.literal("Заданно имя предмета: ").setStyle(Style.EMPTY.withColor(Formatting.WHITE))
+                                                                    .append(item.getName().copy().setStyle(item.getName().getStyle()
+                                                                            .withHoverEvent( new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Копировать: " + name)))
+                                                                            .withClickEvent( new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, name) )
+                                                                    ))
+                                                    );
+                                                    return 1;
+                                                })
+                                        )
                                 )
                                 .executes(context -> {
                                     if( msgItemIsNull(context) ) return 0;
@@ -640,7 +687,7 @@ public class EditItemCommand {
                                                             .append(Text.literal("цвет").setStyle(Style.EMPTY
                                                                     .withColor(color)
                                                                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("#" + hex.toUpperCase()).setStyle(Style.EMPTY.withColor(color))))
-                                                                    .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, hex.toUpperCase()))
+                                                                    .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, "#" + hex.toUpperCase()))
                                                             ))
                                             );
                                             return 1;
@@ -766,11 +813,45 @@ public class EditItemCommand {
                                 )
                         )
 
+                        .then(ClientCommandManager.literal("damage")
+                                .then(ClientCommandManager.literal("set").then(ClientCommandManager.argument("amount", IntegerArgumentType.integer(0))
+                                        .executes(context -> {
+                                            if( msgItemIsNull(context) ) return 0;
+                                            ItemStack item = getItemMainHand();
+                                            int amount = IntegerArgumentType.getInteger(context, "amount");
+                                            item.setDamage(amount);
+                                            setItemMainHand(item);
+                                            context.getSource().sendFeedback(
+                                                    Text.literal("Установлено повреждение предмета: ").setStyle(JustCommand.white)
+                                                            .append(Text.literal("" + amount).setStyle(JustCommand.sucsess))
+                                            );
+                                            return 1;
+                                        }))
+                                )
+                                .executes(context -> {
+                                    if( msgItemIsNull(context) ) return 0;
+                                    ItemStack item = getItemMainHand();
+                                    int amount = item.getDamage();
+                                    context.getSource().sendFeedback(
+                                            Text.literal("Текущее повреждение предмета: ").setStyle(JustCommand.white)
+                                                    .append(Text.literal("" + amount).setStyle(JustCommand.warn))
+                                    );
+                                    return 1;
+                                })
+                        )
+
+                        .then(ClientCommandManager.literal("potion")
+                                1
+                                .executes(context -> {
+                                    return 1;
+                                })
+                        )
+
                         .executes(context -> {
                             context.getSource().sendFeedback(
                                     Text.literal("JustHelper > Аргументы команды edit:").setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
                                             .append( Text.literal("\n\ntag - Добавить/Удалить/Получить кастомный тег предмета").setStyle(JustCommand.gold))
-                                            .append( Text.literal("\n\nrename - Изменить имя предмета. Поддерживаются коды цветов & и плейсхолдеры %empty%, %space%").setStyle(JustCommand.gold))
+                                            .append( Text.literal("\n\nrename - Изменить имя предмета. Поддерживаются коды цветов &, плейсхолдер %space%, формат json и формат minimessage").setStyle(JustCommand.gold))
                                             .append( Text.literal("\n\nmodel - Изменить/Получить модель предмета(CustomModelData)").setStyle(JustCommand.gold) )
                                             .append( Text.literal("\n\nattribute - Добавляет/Удаляет/Получает атрибуты предмета.").setStyle(JustCommand.gold) )
                                             .append( Text.literal("\n\nflag - Добавляет/Удаляет/Получает флаги скрытия предмета.").setStyle(JustCommand.gold) )
@@ -1068,5 +1149,17 @@ public class EditItemCommand {
             result.put(key.substring(17), value);
         }
         return result;
+    }
+
+    private static ItemStack setItemName(String json, ItemStack item) {
+        NbtCompound itemNbt = item.getNbt();
+        if(itemNbt == null) itemNbt = new NbtCompound();
+        NbtCompound display = itemNbt.getCompound("display");
+        display.putString("Name", json);
+        System.out.println(display.asString());
+        itemNbt.put("display", display);
+        System.out.println(itemNbt.asString());
+        item.setNbt(itemNbt);
+        return item;
     }
 }

@@ -1,17 +1,14 @@
 package com.prikolz.justhelper;
 
-import com.prikolz.justhelper.commands.EditItemCommand;
-import com.prikolz.justhelper.commands.JusthelperCommand;
-import com.prikolz.justhelper.commands.SignsCommand;
-import com.prikolz.justhelper.commands.TextsCommand;
+import com.prikolz.justhelper.commands.*;
 import net.fabricmc.api.ModInitializer;
-
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientBlockEntityEvents;
-
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.util.math.BlockPos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
 
 public class Justhelper implements ModInitializer {
 
@@ -24,6 +21,7 @@ public class Justhelper implements ModInitializer {
 		SignsCommand.register();
 		TextsCommand.register();
 		EditItemCommand.register();
+		TestCommand.register();
 
         try {
             Config.initialize();
