@@ -20,9 +20,11 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
+import net.minecraft.potion.Potion;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.*;
@@ -158,6 +160,18 @@ public class EditItemCommand {
 
         for(RegistryKey<Item> key : Registries.ITEM.getKeys()) {
             result.put( key.getValue().getPath(), Registries.ITEM.get(key) );
+        }
+
+        return result;
+    }
+
+    private static final Set<String> potionList = initPotion();
+
+    private static Set<String> initPotion() {
+        Set<String> result = new HashSet<>();
+
+        for(RegistryKey<StatusEffect> key : Registries.STATUS_EFFECT.getKeys()) {
+            result.add(key.getValue().getPath());
         }
 
         return result;
@@ -841,8 +855,103 @@ public class EditItemCommand {
                         )
 
                         .then(ClientCommandManager.literal("potion")
-                                1
+                                .then(ClientCommandManager.literal("add")
+                                        .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, potionList))
+                                                .then(ClientCommandManager.argument("amplifier", IntegerArgumentType.integer(0, 256))
+                                                        .then(ClientCommandManager.argument("duration", IntegerArgumentType.integer(0))
+                                                                .executes(context -> {
+                                                                    if( msgItemIsNull(context) ) return 0;
+                                                                    ItemStack item = getItemMainHand();
+                                                                    String id = VariantsArgumentType.getParameter(context, "id");
+                                                                    int amplifier = IntegerArgumentType.getInteger(context, "amplifier");
+                                                                    int duration = IntegerArgumentType.getInteger(context, "duration");
+                                                                    setPotionEffect(id, amplifier, duration, item);
+                                                                    setItemMainHand(item);
+                                                                    context.getSource().sendFeedback(
+                                                                            Text.literal("Предмету установлен эффект зелья ").setStyle(JustCommand.white)
+                                                                                    .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.sucsess))
+                                                                                    .append(Text.literal(" силой "))
+                                                                                    .append(Text.literal("" + amplifier).setStyle(JustCommand.sucsess))
+                                                                                    .append(Text.literal(" длительностью в "))
+                                                                                    .append(Text.literal("" + duration).setStyle(JustCommand.sucsess))
+                                                                    );
+                                                                    return 1;
+                                                                })
+                                                        )
+                                                )
+                                        )
+                                )
+                                .then(ClientCommandManager.literal("remove")
+                                        .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, potionList))
+                                                .executes(context -> {
+                                                    if( msgItemIsNull(context) ) return 0;
+                                                    ItemStack item = getItemMainHand();
+                                                    String id = VariantsArgumentType.getParameter(context, "id");
+                                                    boolean result = removePotionEffect(id, item);
+                                                    if(result) {
+                                                        setItemMainHand(item);
+                                                        context.getSource().sendFeedback(
+                                                                Text.literal("Удален эффект зелья ").setStyle(JustCommand.white)
+                                                                        .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.sucsess))
+                                                        );
+                                                        return 1;
+                                                    }
+                                                    context.getSource().sendFeedback(
+                                                            Text.literal("Эффект ").setStyle(JustCommand.warn)
+                                                                    .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.white))
+                                                                    .append(Text.literal(" не найден"))
+                                                    );
+                                                    return 0;
+                                                })
+                                        )
+                                )
+                                .then(ClientCommandManager.literal("get")
+                                        .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, potionList))
+                                                .executes(context -> {
+                                                    if( msgItemIsNull(context) ) return 0;
+                                                    ItemStack item = getItemMainHand();
+                                                    String id = VariantsArgumentType.getParameter(context, "id");
+                                                    HashMap<String, PotionData> data = getPotionEffects(item);
+                                                    if(!(data.containsKey(id))) {
+                                                        context.getSource().sendFeedback(
+                                                                Text.literal("Эффект ").setStyle(JustCommand.warn)
+                                                                        .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.white))
+                                                                        .append(Text.literal(" не найден"))
+                                                        );
+                                                        return 0;
+                                                    }
+                                                    PotionData pd = data.get(id);
+                                                    context.getSource().sendFeedback(
+                                                            Text.literal(" • ").setStyle(JustCommand.white)
+                                                                    .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.warn))
+                                                                    .append(Text.literal(" " + pd.amplifier).setStyle(JustCommand.gold))
+                                                                    .append(Text.literal(" | "))
+                                                                    .append(Text.literal("" + pd.duration).setStyle(JustCommand.gold)));
+                                                    return 1;
+                                                })
+                                        )
+
+                                )
                                 .executes(context -> {
+                                    if( msgItemIsNull(context) ) return 0;
+                                    ItemStack item = getItemMainHand();
+                                    HashMap<String, PotionData> data = getPotionEffects(item);
+                                    context.getSource().sendFeedback(
+                                            Text.literal("\nУстановленные эффекты:\n⏷").setStyle(JustCommand.white)
+                                    );
+                                    for(String id : data.keySet()) {
+                                        PotionData pd = data.get(id);
+                                        context.getSource().sendFeedback(
+                                                Text.literal(" • ").setStyle(JustCommand.white)
+                                                        .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.warn))
+                                                        .append(Text.literal(" " + pd.amplifier).setStyle(JustCommand.gold))
+                                                        .append(Text.literal(" | "))
+                                                        .append(Text.literal("" + pd.duration).setStyle(JustCommand.gold))
+                                        );
+                                    }
+                                    context.getSource().sendFeedback(
+                                            Text.literal("⏶\n").setStyle(JustCommand.white)
+                                    );
                                     return 1;
                                 })
                         )
@@ -859,6 +968,7 @@ public class EditItemCommand {
                                             .append( Text.literal("\n\ncolor - Установить цвет предмета. Например, для кожанной брони.").setStyle(JustCommand.gold) )
                                             .append( Text.literal("\n\nunbreakable - Включить/Выключить неразрушаемость предмета.").setStyle(JustCommand.gold) )
                                             .append( Text.literal("\n\nmaterial - Установить тип предмета.").setStyle(JustCommand.gold) )
+                                            .append( Text.literal("\n\npotion - Добавляет/Удаляет/Получает эффекты зелий предмета.").setStyle(JustCommand.gold) )
                             );
                             return 1;
                         })
@@ -1162,4 +1272,59 @@ public class EditItemCommand {
         item.setNbt(itemNbt);
         return item;
     }
+
+    private static void setPotionEffect(String id, int amplifier, int duration, ItemStack item) {
+        removePotionEffect(id, item);
+        NbtCompound nbt = item.getNbt();
+        if(nbt == null) nbt = new NbtCompound();
+        NbtList custom = nbt.getList("custom_potion_effects", 10);
+        NbtCompound potion = new NbtCompound();
+        potion.putString("id", "minecraft:" + id);
+        potion.putByte("amplifier", (byte) amplifier);
+        potion.putInt("duration", duration);
+        custom.add(potion);
+        nbt.put("custom_potion_effects", custom);
+        item.setNbt(nbt);
+    }
+
+    private static boolean removePotionEffect(String id, ItemStack item) {
+        NbtCompound nbt = item.getNbt();
+        if(nbt == null) return false;
+        NbtList custom = nbt.getList("custom_potion_effects", 10);
+        if(custom.isEmpty()) return false;
+        int i = 0;
+        while(true) {
+            NbtCompound element = custom.getCompound(i);
+            if(element.getString("id").equals("minecraft:" + id)) {
+                custom.remove(i);
+                break;
+            }
+            i++;
+            if(i >= custom.size()) {
+                return false;
+            }
+        }
+        nbt.put("custom_potion_effects", custom);
+        item.setNbt(nbt);
+        return true;
+    }
+
+    private static HashMap<String, PotionData> getPotionEffects(ItemStack item) {
+        HashMap<String, PotionData> result = new HashMap<>();
+        NbtCompound nbt = item.getNbt();
+        if(nbt == null) return result;
+        NbtList custom = nbt.getList("custom_potion_effects", 10);
+        if(custom.isEmpty()) return result;
+        for(NbtElement el : custom) {
+            if(!(el instanceof NbtCompound potion)) continue;
+            String id = potion.getString("id").replace("minecraft:", "");
+            byte amplifier = potion.getByte("amplifier");
+            int duration = potion.getInt("duration");
+            result.put(id, new PotionData(duration, amplifier));
+        }
+        return result;
+    }
+
+    private record PotionData(int duration, byte amplifier) {}
+
 }

@@ -32,14 +32,14 @@ public class Config {
 
         messages.clear();
 
-        String directoryName = FabricLoader.getInstance().getGameDir().toString() + "/justhelper/utils";
+        String directoryName = FabricLoader.getInstance().getGameDir().toString() + "/config/justhelper/utils";
 
         File directory = new File(directoryName);
         if (!directory.exists()) {
             directory.mkdirs();
         }
 
-        directoryName = FabricLoader.getInstance().getGameDir().toString() + "/justhelper";
+        directoryName = FabricLoader.getInstance().getGameDir().toString() + "/config/justhelper";
 
         Path filePath = Paths.get(directoryName, "SignOutput.java");
 
@@ -76,7 +76,7 @@ public class Config {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<>();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnosticCollector, null, StandardCharsets.UTF_8);
-        List<String> options = Arrays.asList("-d", FabricLoader.getInstance().getGameDir().toString() + "/justhelper/utils");
+        List<String> options = Arrays.asList("-d", FabricLoader.getInstance().getGameDir().toString() + "/config/justhelper/utils");
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromStrings(List.of(FabricLoader.getInstance().getGameDir().toString() + "/justhelper/SignOutput.java"));
         JavaCompiler.CompilationTask task = compiler.getTask(new PrintWriter(System.out), fileManager, diagnosticCollector, options, null, compilationUnits);
         boolean success = task.call();
@@ -86,7 +86,7 @@ public class Config {
     }
 
     public static void loadCustomOutClass() throws Exception {
-        JustClassLoader classLoader = new JustClassLoader(FabricLoader.getInstance().getGameDir().toString() + "/justhelper/utils", Text.class.getClassLoader());
+        JustClassLoader classLoader = new JustClassLoader(FabricLoader.getInstance().getGameDir().toString() + "/config/justhelper/utils", Text.class.getClassLoader());
 
         Class<?> signOutputClass = classLoader.loadClass("SignOutput");
         signGenerateInstance = signOutputClass.getDeclaredConstructor().newInstance();
@@ -142,7 +142,7 @@ public class Config {
     }
 
     public static void saveDefaultConfig() throws Exception {
-        String directoryName = FabricLoader.getInstance().getGameDir().toString() + "/justhelper";
+        String directoryName = FabricLoader.getInstance().getGameDir().toString() + "/config/justhelper";
         InputStream stream = Config.class.getClassLoader().getResourceAsStream("config.json");
         if(stream == null) throw new Exception("RESOURCE config.json NOT FOUND");
         File file = new File(directoryName + "/config.json");
@@ -153,6 +153,11 @@ public class Config {
                 outputStream.write(buffer, 0, bytesRead);
             }
         }
+    }
+
+    public static void openConfig() throws Exception {
+        String way = FabricLoader.getInstance().getGameDir().toString() + "\\config\\justhelper";
+        Runtime.getRuntime().exec("explorer.exe \"" + way + "\"");
     }
 
 }

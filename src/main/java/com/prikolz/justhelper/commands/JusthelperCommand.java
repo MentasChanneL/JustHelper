@@ -50,11 +50,25 @@ public abstract class JusthelperCommand {
                         })
 
                 )
+                .then( ClientCommandManager.literal("open_config")
+                        .executes(context -> {
+                            try{
+                                Config.openConfig();
+                            }catch (Exception e) {
+                                context.getSource().sendFeedback(
+                                        Text.literal("JustHelper > Ошибка открытия папки: " + e.getMessage()).setStyle(JustCommand.error)
+                                );
+                                return 0;
+                            }
+                            return 1;
+                        })
+                )
                 .executes(context -> {
                     context.getSource().sendFeedback(
                             Text.literal("JustHelper > Аргументы:").setStyle(Style.EMPTY.withColor(Formatting.YELLOW))
-                                    .append( Text.literal("\nreload_config - Перезагрузить конфиг").setStyle(Style.EMPTY
-                                            .withColor(Formatting.GOLD)) )
+                                    .append( Text.literal("\n\nreload_config - Перезагрузить конфиг.").setStyle(Style.EMPTY.withColor(Formatting.GOLD)) )
+                                    .append( Text.literal("\n\nsave_default_config - Перезаписывает текущий конфиг на стандартный.").setStyle(Style.EMPTY.withColor(Formatting.GOLD)) )
+                                    .append( Text.literal("\n\nopen_config - Открывает папку мода.").setStyle(Style.EMPTY.withColor(Formatting.GOLD)) )
                     );
                     return 1;
                 })
