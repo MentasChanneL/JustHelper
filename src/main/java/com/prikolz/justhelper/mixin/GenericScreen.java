@@ -15,10 +15,10 @@ public class GenericScreen {
 
     @Inject( method = "render", at= @At("RETURN"))
     private void inject1(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        int width = client.getWindow().getWidth();
-        int height = client.getWindow().getHeight();
-        System.out.println(width + " " + height);
-        context.drawTexture(CTEXTURE, width / 6, (int)(height / 6), 0, 0, 64, 64);
+        //MinecraftClient client = MinecraftClient.getInstance();
+        //int width = client.getWindow().getWidth();
+        //int height = client.getWindow().getHeight();
+        //System.out.println(width + " " + height);
+        //context.drawTexture(CTEXTURE, width / 6, (int)(height / 6), 0, 0, 64, 64);
     }
 }

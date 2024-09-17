@@ -39,8 +39,8 @@ public abstract class OpenScreen {
     @Inject( method = "apply(Lnet/minecraft/network/listener/ClientPlayPacketListener;)V", at = @At("RETURN"))
     private void inject2(ClientPlayPacketListener clientPlayPacketListener, CallbackInfo ci) {
         if(typesWl.contains(this.screenHandlerId)) {
-            System.out.println(" ALLOW WL");
-            Screen screen = MinecraftClient.getInstance().currentScreen;
+            //System.out.println(" ALLOW WL");
+            //Screen screen = MinecraftClient.getInstance().currentScreen;
         }
     }
 }

@@ -1,6 +1,7 @@
 plugins {
 	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
+	id 'com.github.johnrengelman.shadow' version '7.0.0'
 }
 
 version = project.mod_version
@@ -32,8 +33,25 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	implementation "net.kyori:adventure-text-minimessage:4.17.0"
-	implementation "net.kyori:adventure-text-serializer-gson:4.17.0"
+	implementation ("net.kyori:adventure-text-minimessage:4.17.0")
+	implementation ("net.kyori:adventure-text-serializer-gson:4.17.0")
+
+	includeInternal ("net.kyori:adventure-text-minimessage:4.17.0")
+	includeInternal ("net.kyori:adventure-text-serializer-gson:4.17.0")
+
+}
+
+shadowJar {
+	// Укажите имя файла архива
+	archiveFileName = "justhelper.jar"
+
+	// Добавить зависимости в архив
+	relocate 'net.kyori.adventure-text-minimessage', 'com.prikolz.libs.net.kyori' // Перемещение пакета
+
+	// Дополнительные настройки
+	manifest {
+		attributes 'Main-Class' : 'com.prikolz.Justhelper' // Главный класс приложения
+	}
 }
 
 processResources {
