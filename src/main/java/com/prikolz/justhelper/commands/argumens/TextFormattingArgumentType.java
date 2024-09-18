@@ -40,7 +40,7 @@ public class TextFormattingArgumentType implements ArgumentType<VarText.TextType
     public VarText.TextType parse(StringReader reader) throws CommandSyntaxException {
         String string = reader.readUnquotedString();
         try {
-            return VarText.TextType.valueOf(string);
+            return VarText.TextType.valueOf(string.toUpperCase());
         }catch (Exception e) {
             throw UNKNOW_FORMAT.create(string);
         }

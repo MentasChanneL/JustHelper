@@ -34,7 +34,7 @@ public class ShortCommand {
         this.run = run;
         this.names = new ArrayList<>();
         this.runElements = new ArrayList<>();
-        for(String key : arguments.keySet()) {
+        for(String key : structure) {
             int i = 1;
             String name = key;
             while(names.contains(name)) {
@@ -84,15 +84,16 @@ public class ShortCommand {
             String name = this.names.get(index);
             String key = this.structure[index];
             SCArgument arg = this.arguments.get( key );
+            System.out.println("k " + key + " = " + arg);
             if(arg == null) continue;
             if(mladshy == null) {
                 mladshy = ClientCommandManager.argument(name, arg).executes(context -> run(context));
                 continue;
             }
-            mladshy = ClientCommandManager.argument(key, arg).then(mladshy);
-            JustCommand.registerInDispacher(manager);
+            mladshy = ClientCommandManager.argument(name, arg).then(mladshy);
         }
         manager.then(mladshy);
+        JustCommand.registerInDispacher(manager);
     }
 
     private int run(CommandContext<FabricClientCommandSource> context) {
@@ -112,7 +113,7 @@ public class ShortCommand {
                     if(ga.split != null) {
                         String[] values = var.split(ga.split);
                         for(String value : values) {
-                            CommandBuffer.sendCommand(command.append(value).toString());
+                            CommandBuffer.sendCommand(command + value);
                         }
                         return 1;
                     }

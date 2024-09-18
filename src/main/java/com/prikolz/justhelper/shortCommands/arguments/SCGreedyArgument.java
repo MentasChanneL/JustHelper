@@ -38,4 +38,9 @@ public class SCGreedyArgument extends SCArgument {
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         return CommandSource.suggestMatching(this.suggestions, builder);
     }
+
+    @Override
+    public String toString() {
+        return "SCGreedyArgument( split=" + this.split + " parsing=" + this.parseType.name() + " suggestions=" + this.suggestions + " )";
+    }
 }

@@ -13,7 +13,7 @@ public class SCConfig {
         JsonObject shortSector = (JsonObject) Config.getParamJson("short-commands", main, new JsonObject());
         useShortCommands = (boolean) Config.getParamJson("enable", shortSector, false);
         if (!useShortCommands) return;
-        JsonObject constructor = main.getAsJsonObject("constructor");
+        JsonObject constructor = shortSector.getAsJsonObject("constructor");
         HashMap<String, ShortCommand> commands = new HashMap<>();
         for(String key : constructor.keySet()) {
             ShortCommand cmd = ShortCommand.fromJson( constructor.getAsJsonObject(key) );

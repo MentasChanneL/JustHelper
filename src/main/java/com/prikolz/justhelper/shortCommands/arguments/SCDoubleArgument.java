@@ -47,4 +47,9 @@ public class SCDoubleArgument extends SCArgument {
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         return CommandSource.suggestMatching(this.suggestions, builder);
     }
+
+    @Override
+    public String toString() {
+        return "SCDoubleArgument( max=" + this.max + " min=" + this.min + " suggestions=" + this.suggestions + " )";
+    }
 }

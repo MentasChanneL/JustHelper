@@ -47,4 +47,9 @@ public class SCIntArgument extends SCArgument {
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         return CommandSource.suggestMatching(this.suggestions, builder);
     }
+
+    @Override
+    public String toString() {
+        return "SCIntArgument( max=" + this.max + " min=" + this.min + " suggestions=" + this.suggestions + " )";
+    }
 }

@@ -3,6 +3,8 @@ package com.prikolz.justhelper.vars.text;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 
 public interface VarText {
 
@@ -13,6 +15,7 @@ public interface VarText {
     static ItemStack getTextExemplar(String text, String parsing) {
         ItemStack result = new ItemStack(Items.BOOK);
         NbtCompound nbt = new NbtCompound();
+
         NbtCompound creativePlus = new NbtCompound();
         NbtCompound value = new NbtCompound();
         value.putString("type", "text");
@@ -20,6 +23,11 @@ public interface VarText {
         value.putString("parsing", parsing);
         creativePlus.put("value", value);
         nbt.put("creative_plus", creativePlus);
+
+        NbtCompound display = new NbtCompound();
+        display.putString("Name", text);
+        nbt.put("display", display);
+
         result.setNbt(nbt);
         return result;
     }

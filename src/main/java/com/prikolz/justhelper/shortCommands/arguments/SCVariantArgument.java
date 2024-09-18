@@ -32,4 +32,9 @@ public class SCVariantArgument extends SCArgument {
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         return CommandSource.suggestMatching(this.suggestions, builder);
     }
+
+    @Override
+    public String toString() {
+        return "SCVariantArgument( suggestions=" + this.suggestions + " )";
+    }
 }
