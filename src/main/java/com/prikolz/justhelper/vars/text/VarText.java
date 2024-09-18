@@ -23,4 +23,25 @@ public interface VarText {
         result.setNbt(nbt);
         return result;
     }
+
+    static VarText getText(String text, TextType type) {
+        return switch (type) {
+            case JSON -> new JsonText(text);
+            case STYLED -> new StyledText(text);
+            case FORMATTED -> new FormattedText(text);
+            case PLAIN -> new PlainText(text);
+        };
+    }
+    static VarText[] getTexts(String[] texts, TextType type) {
+        VarText[] result = new VarText[texts.length];
+        int i = 0;
+        for(String el : texts) {
+            result[i] = getText(el, type);
+            i++;
+        }
+        return result;
+    }
+
+    enum TextType{ STYLED, PLAIN, JSON, FORMATTED }
+
 }

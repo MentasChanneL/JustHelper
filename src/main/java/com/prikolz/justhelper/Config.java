@@ -3,6 +3,7 @@ package com.prikolz.justhelper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.prikolz.justhelper.shortCommands.SCConfig;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.text.Text;
 
@@ -70,6 +71,13 @@ public class Config {
         commandBufferCD = (int) getParamJson("command_buffer_cooldown", main, 700);
         JsonObject texts = (JsonObject) getParamJson("texts_command", main, new JsonObject());
         textsClipLimit = (int) getParamJson("+clip_limit", texts, 5000);
+
+        try {
+            SCConfig.parse(main);
+        }catch (Exception e) {
+            messages.add("КОНФИГ: Ошибка чтения секции short-commands: " + e.getMessage());
+        }
+
     }
 
     public static void compileJava() throws Exception {
@@ -99,7 +107,7 @@ public class Config {
         if(signGenerateMethod == null) throw new Exception("Method 'generate' not found!");
     }
 
-    private static Object getParamJson(String key, JsonObject object, Object defaultValue) {
+    public static Object getParamJson(String key, JsonObject object, Object defaultValue) {
         JsonElement result = object.get(key);
         if(result == null) {
             messages.add("КОНФИГ: Параметр " + key + " не найден!");

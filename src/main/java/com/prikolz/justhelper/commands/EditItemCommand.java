@@ -8,7 +8,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.prikolz.justhelper.commands.argumens.ColorArgumentType;
 import com.prikolz.justhelper.commands.argumens.DisplayJSONArgumentType;
+import com.prikolz.justhelper.commands.argumens.TextFormattingArgumentType;
 import com.prikolz.justhelper.commands.argumens.VariantsArgumentType;
+import com.prikolz.justhelper.vars.text.VarText;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.kyori.adventure.text.Component;
@@ -24,7 +26,6 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
-import net.minecraft.potion.Potion;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.*;
@@ -585,65 +586,71 @@ public class EditItemCommand {
                                         })
                                 )
                                 .then(ClientCommandManager.literal("add")
-                                        .then(ClientCommandManager.argument("lines", StringArgumentType.greedyString())
-                                                .executes(context -> {
-                                                    if( msgItemIsNull(context) ) return 0;
-                                                    ItemStack item = getItemMainHand();
-                                                    String line = StringArgumentType.getString(context, "lines");
-                                                    boolean isJson = line.startsWith("{");
-                                                    String[] lines = line.split("\\\\n");
-                                                    String err = addLoreLines(item, 0, lines, true, isJson);
-                                                    if(!err.isEmpty()) {
-                                                        context.getSource().sendFeedback(Text.literal(err).setStyle(JustCommand.error));
-                                                        return 0;
-                                                    }
-                                                    context.getSource().sendFeedback(Text.literal("Добавлены новые строчки").setStyle(JustCommand.sucsess));
-                                                    setItemMainHand(item);
-                                                    return 1;
-                                                })
-                                        )
-                                )
-                                .then(ClientCommandManager.literal("insert")
-                                        .then(ClientCommandManager.argument("line", IntegerArgumentType.integer())
+                                        .then(ClientCommandManager.argument("format", new TextFormattingArgumentType())
                                                 .then(ClientCommandManager.argument("lines", StringArgumentType.greedyString())
                                                         .executes(context -> {
                                                             if( msgItemIsNull(context) ) return 0;
                                                             ItemStack item = getItemMainHand();
                                                             String line = StringArgumentType.getString(context, "lines");
-                                                            int pos = IntegerArgumentType.getInteger(context, "line");
-                                                            boolean isJson = line.startsWith("{");
+                                                            VarText.TextType type = TextFormattingArgumentType.getFormatType(context, "format");
                                                             String[] lines = line.split("\\\\n");
-                                                            String err = addLoreLines(item, pos, lines, true, isJson);
+                                                            String err = addLoreLines(item, 0, VarText.getTexts(lines, type), true);
                                                             if(!err.isEmpty()) {
                                                                 context.getSource().sendFeedback(Text.literal(err).setStyle(JustCommand.error));
                                                                 return 0;
                                                             }
-                                                            context.getSource().sendFeedback(Text.literal("Вставлены новые строчки").setStyle(JustCommand.sucsess));
+                                                            context.getSource().sendFeedback(Text.literal("Добавлены новые строчки").setStyle(JustCommand.sucsess));
                                                             setItemMainHand(item);
                                                             return 1;
                                                         })
                                                 )
                                         )
                                 )
+                                .then(ClientCommandManager.literal("insert")
+                                        .then(ClientCommandManager.argument("line", IntegerArgumentType.integer())
+                                                .then(ClientCommandManager.argument("format", new TextFormattingArgumentType())
+                                                        .then(ClientCommandManager.argument("lines", StringArgumentType.greedyString())
+                                                                .executes(context -> {
+                                                                    if( msgItemIsNull(context) ) return 0;
+                                                                    ItemStack item = getItemMainHand();
+                                                                    String line = StringArgumentType.getString(context, "lines");
+                                                                    VarText.TextType type = TextFormattingArgumentType.getFormatType(context, "format");
+                                                                    int pos = IntegerArgumentType.getInteger(context, "line");
+                                                                    String[] lines = line.split("\\\\n");
+                                                                    String err = addLoreLines(item, pos, VarText.getTexts(lines, type), true);
+                                                                    if(!err.isEmpty()) {
+                                                                        context.getSource().sendFeedback(Text.literal(err).setStyle(JustCommand.error));
+                                                                        return 0;
+                                                                    }
+                                                                    context.getSource().sendFeedback(Text.literal("Вставлены новые строчки").setStyle(JustCommand.sucsess));
+                                                                    setItemMainHand(item);
+                                                                    return 1;
+                                                                })
+                                                        )
+                                                )
+                                        )
+                                )
                                 .then(ClientCommandManager.literal("set")
                                         .then(ClientCommandManager.argument("line", IntegerArgumentType.integer())
-                                                .then(ClientCommandManager.argument("lines", StringArgumentType.greedyString())
-                                                        .executes(context -> {
-                                                            if( msgItemIsNull(context) ) return 0;
-                                                            ItemStack item = getItemMainHand();
-                                                            String line = StringArgumentType.getString(context, "lines");
-                                                            int pos = IntegerArgumentType.getInteger(context, "line");
-                                                            boolean isJson = line.startsWith("{");
-                                                            String[] lines = line.split("\\\\n");
-                                                            String err = addLoreLines(item, pos, lines, false, isJson);
-                                                            if(!err.isEmpty()) {
-                                                                context.getSource().sendFeedback(Text.literal(err).setStyle(JustCommand.error));
-                                                                return 0;
-                                                            }
-                                                            context.getSource().sendFeedback(Text.literal("Строчки заменены").setStyle(JustCommand.sucsess));
-                                                            setItemMainHand(item);
-                                                            return 1;
-                                                        })
+                                                .then(ClientCommandManager.argument("format", new TextFormattingArgumentType())
+                                                        .then(ClientCommandManager.argument("lines", StringArgumentType.greedyString())
+                                                                .executes(context -> {
+                                                                    if( msgItemIsNull(context) ) return 0;
+                                                                    ItemStack item = getItemMainHand();
+                                                                    String line = StringArgumentType.getString(context, "lines");
+                                                                    VarText.TextType type = TextFormattingArgumentType.getFormatType(context, "format");
+                                                                    int pos = IntegerArgumentType.getInteger(context, "line");
+                                                                    String[] lines = line.split("\\\\n");
+                                                                    String err = addLoreLines(item, pos, VarText.getTexts(lines, type), false);
+                                                                    if(!err.isEmpty()) {
+                                                                        context.getSource().sendFeedback(Text.literal(err).setStyle(JustCommand.error));
+                                                                        return 0;
+                                                                    }
+                                                                    context.getSource().sendFeedback(Text.literal("Строчки заменены").setStyle(JustCommand.sucsess));
+                                                                    setItemMainHand(item);
+                                                                    return 1;
+                                                                })
+                                                        )
                                                 )
                                         )
                                 )
@@ -1063,7 +1070,7 @@ public class EditItemCommand {
         return true;
     }
 
-    private static String addLoreLines(ItemStack item, int pos, String[] lines, boolean isNew, TextType textType) {
+    private static String addLoreLines(ItemStack item, int pos, VarText[] lines, boolean isNew) {
         if(pos < 0) return "Номер линии должен быть больше -1!";
         NbtCompound nbt = item.getNbt();
         if(nbt == null) nbt = new NbtCompound();
@@ -1079,25 +1086,11 @@ public class EditItemCommand {
                 }
             }
 
-            if (textType == TextType.JSON) {
-                for (String line : lines) {
-                    list.add(pos, NbtString.of(line));
-                    pos++;
-                }
+            for (VarText line : lines) {
+                list.add(pos, NbtString.of( line.toJson() ));
+                pos++;
             }
 
-            if (textType == TextType.PLAIN) {
-                for (String line : lines) {
-                    list.add(pos, NbtString.of(lineToJson(line)));
-                    pos++;
-                }
-            }
-            else {
-                for (String line : lines) {
-                    list.add(pos, NbtString.of(lineToJson(line)));
-                    pos++;
-                }
-            }
         }else{
             if(pos == 0) {
                 pos = list.size() - 1;
@@ -1108,16 +1101,9 @@ public class EditItemCommand {
                     list.add(NbtString.of("{\"text\":\"\"}"));
                 }
             }
-            if (isJson) {
-                for (String line : lines) {
-                    list.set(pos, NbtString.of(line));
-                    pos++;
-                }
-            } else {
-                for (String line : lines) {
-                    list.set(pos, NbtString.of(lineToJson(line)));
-                    pos++;
-                }
+            for (VarText line : lines) {
+                list.set(pos, NbtString.of( line.toJson() ));
+                pos++;
             }
         }
         display.put("Lore", list);
@@ -1151,14 +1137,6 @@ public class EditItemCommand {
         nbt.put("display", display);
         item.setNbt(nbt);
         return "";
-    }
-
-    private static String lineToJson(String line) {
-        return "{\"text\":\"" + line + "\"}";
-    }
-
-    private static String formatText(String text) {
-        return text.replaceAll("&", "§").replaceAll("%space%", " ").replaceAll("%empty%", "")
     }
 
     private static void setColor(ItemStack item, int color) {
@@ -1339,6 +1317,4 @@ public class EditItemCommand {
     }
 
     private record PotionData(int duration, byte amplifier) {}
-    private enum TextType{ STYLED, PLAIN, JSON, FORMATTED }
-
 }

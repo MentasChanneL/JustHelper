@@ -13,15 +13,15 @@
     "constructor": {
       "n": {
         "arguments": {
-          "nums": {
+          "numbers": {
             "type": "greedy",
             "suggestions": [],
             "parser": "double",
             "split": " "
           }
         },
-        "structure": ["n"],
-        "run": "num $for(nums)"
+        "structure": ["numbers"],
+        "run": "num ${1}"
       }
     }
   }
