@@ -2,6 +2,7 @@ plugins {
 	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
 	id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 version = project.mod_version
@@ -38,6 +39,7 @@ dependencies {
 
 	includeInternal ("net.kyori:adventure-text-minimessage:4.17.0")
 	includeInternal ("net.kyori:adventure-text-serializer-gson:4.17.0")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
 }
 
@@ -72,8 +74,6 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
 }
 
 jar {
@@ -98,4 +98,7 @@ publishing {
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
 	}
+}
+kotlin {
+    jvmToolchain(17)
 }

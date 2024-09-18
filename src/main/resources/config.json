@@ -7,5 +7,22 @@
   "texts_command": {
     "+clip_limit": 5000
   },
-  "command_buffer_cooldown": 700
+  "command_buffer_cooldown": 700,
+  "short-commands": {
+    "enable": true,
+    "constructor": {
+      "n": {
+        "arguments": {
+          "nums": {
+            "type": "greedy",
+            "suggestions": [],
+            "parser": "double",
+            "split": " "
+          }
+        },
+        "structure": ["n"],
+        "run": "num $for(nums)"
+      }
+    }
+  }
 }

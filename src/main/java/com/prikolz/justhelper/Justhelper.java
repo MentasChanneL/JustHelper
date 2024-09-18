@@ -8,8 +8,6 @@ import net.minecraft.util.math.BlockPos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
 public class Justhelper implements ModInitializer {
 
     public static final Logger LOGGER = LoggerFactory.getLogger("justhelper");

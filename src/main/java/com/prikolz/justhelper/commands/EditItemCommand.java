@@ -1063,7 +1063,7 @@ public class EditItemCommand {
         return true;
     }
 
-    private static String addLoreLines(ItemStack item, int pos, String[] lines, boolean isNew, boolean isJson) {
+    private static String addLoreLines(ItemStack item, int pos, String[] lines, boolean isNew, TextType textType) {
         if(pos < 0) return "Номер линии должен быть больше -1!";
         NbtCompound nbt = item.getNbt();
         if(nbt == null) nbt = new NbtCompound();
@@ -1078,12 +1078,21 @@ public class EditItemCommand {
                     list.add(NbtString.of("{\"text\":\"\"}"));
                 }
             }
-            if (isJson) {
+
+            if (textType == TextType.JSON) {
                 for (String line : lines) {
                     list.add(pos, NbtString.of(line));
                     pos++;
                 }
-            } else {
+            }
+
+            if (textType == TextType.PLAIN) {
+                for (String line : lines) {
+                    list.add(pos, NbtString.of(lineToJson(line)));
+                    pos++;
+                }
+            }
+            else {
                 for (String line : lines) {
                     list.add(pos, NbtString.of(lineToJson(line)));
                     pos++;
@@ -1145,7 +1154,11 @@ public class EditItemCommand {
     }
 
     private static String lineToJson(String line) {
-        return "{\"text\":\"" + line.replaceAll("&", "§").replaceAll("%space%", " ").replaceAll("%empty%", "") + "\"}";
+        return "{\"text\":\"" + line + "\"}";
+    }
+
+    private static String formatText(String text) {
+        return text.replaceAll("&", "§").replaceAll("%space%", " ").replaceAll("%empty%", "")
     }
 
     private static void setColor(ItemStack item, int color) {
@@ -1326,5 +1339,6 @@ public class EditItemCommand {
     }
 
     private record PotionData(int duration, byte amplifier) {}
+    private enum TextType{ STYLED, PLAIN, JSON, FORMATTED }
 
 }
