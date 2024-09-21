@@ -22,6 +22,27 @@
         },
         "structure": ["numbers"],
         "run": "num ${1}"
+      },
+      "t": {
+        "arguments": {
+          "text": {
+            "type": "greedy",
+            "suggestions": []
+          }
+        },
+        "structure": ["text"],
+        "run": "txt ${1}"
+      },
+      "vl": {
+        "arguments": {
+          "name": {
+            "type": "greedy",
+            "suggestions": [],
+            "split": " "
+          }
+        },
+        "structure": ["name"],
+        "run": "var local ${1}"
       }
     }
   }

@@ -297,61 +297,20 @@ public class EditItemCommand {
                                 })
                         )
                         .then( ClientCommandManager.literal("rename" )
-                                .then(ClientCommandManager.literal("json")
-                                        .then(ClientCommandManager.argument("json", new DisplayJSONArgumentType())
+                                .then(ClientCommandManager.argument("format", new TextFormattingArgumentType())
+                                        .then(ClientCommandManager.argument("text", StringArgumentType.greedyString())
                                                 .executes(context -> {
                                                     if( msgItemIsNull(context) ) return 0;
                                                     ItemStack item = getItemMainHand();
-                                                    String name = DisplayJSONArgumentType.getDisplay(context, "json");
-                                                    setItemMainHand( setItemName(name, item) );
+                                                    String name = StringArgumentType.getString(context, "text");
+                                                    VarText.TextType type = TextFormattingArgumentType.getFormatType(context, "format");
+                                                    VarText text = VarText.getText(name, type);
+                                                    setItemMainHand( setItemName(text.toJson(), item) );
                                                     context.getSource().sendFeedback(
                                                             Text.literal("Заданно имя предмета: ").setStyle(Style.EMPTY.withColor(Formatting.WHITE))
-                                                                    .append(Text.literal(name).setStyle(
-                                                                            JustCommand.sucsess
+                                                                    .append(item.getName().copy().setStyle( item.getName().getStyle()
                                                                                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Копировать: " + name)))
                                                                                     .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, name))
-                                                                            ))
-                                                    );
-                                                    return 1;
-                                                })
-                                        )
-                                )
-                                .then(ClientCommandManager.literal("plain")
-                                        .then(ClientCommandManager.argument("name", StringArgumentType.greedyString())
-                                                .executes(context -> {
-                                                    if( msgItemIsNull(context) ) return 0;
-                                                    ItemStack item = getItemMainHand();
-                                                    String name = StringArgumentType.getString(context, "name");
-                                                    String formatted = name.replaceAll("%space%", " ").replaceAll("&", "§");
-                                                    setItemMainHand( setItemName("{\"text\":\"" + formatted + "\", \"italic\":false}", item) );
-                                                    context.getSource().sendFeedback(
-                                                            Text.literal("Заданно имя предмета: ").setStyle(Style.EMPTY.withColor(Formatting.WHITE))
-                                                                    .append(Text.literal(formatted).setStyle(Style.EMPTY
-                                                                            .withHoverEvent( new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Копировать: " + name)))
-                                                                            .withClickEvent( new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, name) )
-                                                                    ))
-                                                    );
-                                                    return 1;
-                                                })
-                                        )
-                                )
-                                .then(ClientCommandManager.literal("style")
-                                        .then(ClientCommandManager.argument("styledText", StringArgumentType.greedyString())
-                                                .executes(context -> {
-                                                    if( msgItemIsNull(context) ) return 0;
-                                                    ItemStack item = getItemMainHand();
-                                                    String name = StringArgumentType.getString(context, "styledText");
-                                                    MiniMessage mm = MiniMessage.miniMessage();
-                                                    Component component = mm.deserialize(name.replaceAll("%space%", " "));
-                                                    setItemMainHand( setItemName(
-                                                            JSONComponentSerializer.json().serialize(component),
-                                                            item
-                                                    ) );
-                                                    context.getSource().sendFeedback(
-                                                            Text.literal("Заданно имя предмета: ").setStyle(Style.EMPTY.withColor(Formatting.WHITE))
-                                                                    .append(item.getName().copy().setStyle(item.getName().getStyle()
-                                                                            .withHoverEvent( new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Копировать: " + name)))
-                                                                            .withClickEvent( new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, name) )
                                                                     ))
                                                     );
                                                     return 1;

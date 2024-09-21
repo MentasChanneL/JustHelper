@@ -1,22 +1,32 @@
 package com.prikolz.justhelper.vars.text;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minecraft.item.ItemStack;
 
 public class FormattedText implements VarText {
 
     private String text;
+    private Component component;
 
     public FormattedText(String string) {
-        this.text = string;
+        setFormattedText(string);
+    }
+
+    private String format(String str) {
+        return str.replaceAll("&","§").replaceAll("%space%", " ").replaceAll("%empty%", "");
     }
 
     public void setFormattedText(String string) {
         this.text = string;
+        this.component = Component.empty().decoration(TextDecoration.ITALIC, false).append( LegacyComponentSerializer.legacySection().deserialize(format(string)) );
     }
 
     @Override
     public String toJson() {
-        return "{\"text\":\"" + this.text.replaceAll("&", "§").replaceAll("%space%", " ").replaceAll("%empty%", "") + "\"}";
+        return JSONComponentSerializer.json().serialize(this.component);
     }
 
     @Override
