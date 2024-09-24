@@ -1,16 +1,22 @@
 package com.prikolz.justhelper.vars;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.prikolz.justhelper.Config;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 
 public abstract class Texts {
     public static String run(boolean clip) {
@@ -64,9 +70,12 @@ public abstract class Texts {
                     String inTag = el.replaceAll("\"", "\\\\\"");
                     String inDisplay = el.replaceAll("\"", "\\\\\\\\\"").replaceAll("'", "\\\\'");
 
-                    String nbt = "{display: {Name: '{\"italic\":false,\"text\":\"" + inDisplay + "\"}', Lore: ['{\"italic\":false,\"color\":\"#ABC4D6\",\"extra\":[\" \",{\"color\":\"yellow\",\"translate\":\"creative_plus.argument.text.parsing_type.legacy\"}],\"translate\":\"creative_plus.argument.text.parsing_type\"}', '{\"italic\":false,\"color\":\"gray\",\"translate\":\"creative_plus.argument.text.parsing_type.about.legacy\"}', '{\"italic\":false,\"color\":\"#ABC4D6\",\"translate\":\"creative_plus.argument.text.raw_view\"}', '{\"italic\":false,\"color\":\"white\",\"text\":\"" + inDisplay + "\"}']}, creative_plus: {value: {type: \"text\", text: \"" + inTag + "\", parsing: \"legacy\"}}}";
-                    ItemStack book = createNBTItemStack(new ItemStack(Items.BOOK), 1, nbt);
-                    player.getInventory().setStack(slots[i], book);
+                    ItemStack item = new ItemStack(Items.BOOK);
+                    item.set(DataComponentTypes.ITEM_NAME, Text.literal(inDisplay));
+                    List<Text> lines = new LinkedList<>();
+                    lines.add(Text.translatable("creative_plus.argument.text.parsing_type.legacy").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(11257046))));
+                    item.set(DataComponentTypes.LORE, new LoreComponent(lines));
+                    player.getInventory().setStack(slots[i], item);
                     i++;
                 }
                 return "";
@@ -98,19 +107,5 @@ public abstract class Texts {
             index += substring.length();
         }
         return count;
-    }
-
-    public static ItemStack createNBTItemStack(ItemStack item, int count, String nbt) {
-        item.setCount(count);
-
-        NbtCompound nbtc;
-        try {
-            nbtc = StringNbtReader.parse(nbt);
-        } catch (CommandSyntaxException e) {
-            throw new RuntimeException(e);
-        }
-        item.setNbt(nbtc);
-
-        return item;
     }
 }

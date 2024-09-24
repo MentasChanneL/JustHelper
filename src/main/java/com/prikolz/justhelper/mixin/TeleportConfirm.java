@@ -21,8 +21,8 @@ import java.time.Instant;
 
 @Mixin(CommandExecutionC2SPacket.class)
 public class TeleportConfirm {
-	@Inject( method = "<init>(Ljava/lang/String;Ljava/time/Instant;JLnet/minecraft/network/message/ArgumentSignatureDataMap;Lnet/minecraft/network/message/LastSeenMessageList$Acknowledgment;)V", at = @At("RETURN"))
-	private void inject2(String string, Instant timestamp, long salt, ArgumentSignatureDataMap argumentSignatures, LastSeenMessageList.Acknowledgment acknowledgment, CallbackInfo ci) {
+	@Inject( method = "<init>(Ljava/lang/String;)V", at = @At("RETURN"))
+	private void inject2(String string, CallbackInfo ci) {
 		if(!Config.enableBackTeleport) return;
 		ClientPlayerEntity camera = MinecraftClient.getInstance().player;
 

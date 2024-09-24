@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GenericContainerScreen.class)
 public class GenericScreen {
-    private static final Identifier CTEXTURE = new Identifier("textures/map/map_background.png");
+    private static final Identifier CTEXTURE = Identifier.ofVanilla("textures/map/map_background.png");
 
     @Inject( method = "render", at= @At("RETURN"))
     private void inject1(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {

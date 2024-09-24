@@ -1,8 +1,10 @@
 package com.prikolz.justhelper.vars.text;
 
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtCompo1und;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 
@@ -28,7 +30,7 @@ public interface VarText {
         display.putString("Name", text);
         nbt.put("display", display);
 
-        result.setNbt(nbt);
+        result.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt) );
         return result;
     }
 

@@ -19,7 +19,6 @@ public class Justhelper implements ModInitializer {
 		SignsCommand.register();
 		ClipboardCommand.register();
 		EditItemCommand.register();
-		TestCommand.register();
 
         try {
             Config.initialize();

@@ -1,8 +1,6 @@
 plugins {
 	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
-	id 'com.github.johnrengelman.shadow' version '7.0.0'
-    id 'org.jetbrains.kotlin.jvm'
 }
 
 version = project.mod_version
@@ -18,7 +16,6 @@ repositories {
 	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
-	mavenCentral()
 }
 
 fabricApi {
@@ -40,21 +37,8 @@ dependencies {
 
 	includeInternal ("net.kyori:adventure-text-minimessage:4.17.0")
 	includeInternal ("net.kyori:adventure-text-serializer-gson:4.17.0")
-    includeInternal ( "net.kyori:adventure-text-serializer-legacy:4.17.0" )
-
-}
-
-shadowJar {
-	// Укажите имя файла архива
-	archiveFileName = "justhelper.jar"
-
-	// Добавить зависимости в архив
-	relocate 'net.kyori.adventure-text-minimessage', 'com.prikolz.libs.net.kyori' // Перемещение пакета
-
-	// Дополнительные настройки
-	manifest {
-		attributes 'Main-Class' : 'com.prikolz.Justhelper' // Главный класс приложения
-	}
+	includeInternal ("net.kyori:adventure-text-serializer-legacy:4.17.0")
+	
 }
 
 processResources {
@@ -66,7 +50,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
+	it.options.release = 21
 }
 
 java {
@@ -75,6 +59,8 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {
@@ -99,7 +85,4 @@ publishing {
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
 	}
-}
-kotlin {
-    jvmToolchain(17)
 }
