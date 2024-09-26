@@ -124,7 +124,7 @@ public class EditItemCommand {
                                                             String key = StringArgumentType.getString(context, "name");
                                                             String value = StringArgumentType.getString(context, "value");
                                                             for(char c : key.toCharArray()) {
-                                                                if( !(c >= 'a' && c <= 'z') && c != '_' && c != '-') {
+                                                                if( !(c >= 'a' && c <= 'z') && !(c >= '0' && c <= '9') && c != '_' && c != '-') {
                                                                     context.getSource().sendFeedback(Text.literal("JustHelper > Название тега содержит недопустимые символы! Название может содержать только: маленькие латинские(английские) буквы, цифры, нижнее подчеркивание или тире.").setStyle(JustCommand.error));
                                                                     return 0;
                                                                 }

@@ -10,8 +10,8 @@ public class SCConfig {
     public static boolean useShortCommands = false;
 
     public static void parse(JsonObject main) throws Exception{
-        JsonObject shortSector = (JsonObject) Config.getParamJson("short-commands", main, new JsonObject());
-        useShortCommands = (boolean) Config.getParamJson("enable", shortSector, false);
+        JsonObject shortSector = (JsonObject) Config.getParamJson("short-commands", main, JsonObject.class.getName(), new JsonObject());
+        useShortCommands = (boolean) Config.getParamJson("enable", shortSector, Boolean.class.getName(), false);
         if (!useShortCommands) return;
         JsonObject constructor = shortSector.getAsJsonObject("constructor");
         HashMap<String, ShortCommand> commands = new HashMap<>();

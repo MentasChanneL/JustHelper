@@ -44,7 +44,7 @@ public abstract class Texts {
 
                 List<String> els;
                 if(clip) {
-                    els = splitText(clipboard.replaceAll("\n",""), Config.textsClipLimit);
+                    els = splitText(clipboard.replaceAll("\n",""), ((Double)(Config.getCommand("clipboard").getDoubleParameter("clip_limit", 5000.0))).intValue() );
                 }else{
                     els = List.of(clipboard);
                 }

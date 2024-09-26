@@ -4,13 +4,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import com.mojang.brigadier.context.CommandContext;
 import com.prikolz.justhelper.commands.ClipboardCommand;
 import com.prikolz.justhelper.commands.EditItemCommand;
 import com.prikolz.justhelper.commands.SignsCommand;
 import com.prikolz.justhelper.shortCommands.SCConfig;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 
 import javax.tools.*;
@@ -76,12 +75,11 @@ public class Config {
         compileCustomOutputClass = (boolean) getParamJson("compile", customClass, Boolean.class.getName(), false);
         enableBackTeleport = (boolean) getParamJson("enable_back_teleport", main, Boolean.class.getName(), true);
         commandBufferCD = (int) getParamJson("command_buffer_cooldown", main, Integer.class.getName(), 700);
-        JsonObject commandsSector = (JsonObject) getParamJson("commands", main, JsonObject.class.getName(), null);
-        if(commandsSector != null) {
-            commands.put("signs", ConfiguredCommand.fromJson(commandsSector, "signs"));
-            commands.put("edit", ConfiguredCommand.fromJson(commandsSector, "edit"));
-            commands.put("clipboard", ConfiguredCommand.fromJson(commandsSector, "clipboard"));
-        }
+        JsonObject commandsSector = (JsonObject) getParamJson("commands", main, JsonObject.class.getName(), new JsonObject());
+        commands.clear();
+        commands.put("signs", ConfiguredCommand.fromJson(commandsSector, "signs", new RequiredCommandArgument("name", "signs")));
+        commands.put("edit", ConfiguredCommand.fromJson(commandsSector, "edit", new RequiredCommandArgument("name", "edit")));
+        commands.put("clipboard", ConfiguredCommand.fromJson(commandsSector, "clipboard", new RequiredCommandArgument("name", "clipboard"), new RequiredCommandArgument("clip_limit", 5000.0)));
 
         SignsCommand.register();
         ClipboardCommand.register();
@@ -96,7 +94,11 @@ public class Config {
     }
 
     public static String getCommandName(String key) {
-        return commands.get(key).getStrParameter("name", key);
+        return commands.get(key).getStrParameter("name");
+    }
+
+    public static ConfiguredCommand getCommand(String key) {
+        return commands.get(key);
     }
 
     public static void compileJava() throws Exception {
@@ -196,66 +198,41 @@ public class Config {
             this.name = name;
         }
 
-        private ConfiguredCommand(String name) {
-            this.name = name;
-            this.parameters = null;
-        }
-
-        public String getStrParameter(String key, String defaultValue) {
-            Object parameter = generalGetParameter(key);
-            if(parameter == null) return defaultValue;
-            if(!(parameter instanceof String)) {
-                log("Параметр " + key + ", в секции commands." + this.name + ", указан не правильно! Должна быть строка!");
-                return defaultValue;
-            }
-            return (String) parameter;
+        public String getStrParameter(String key) {
+            return (String) this.parameters.get(key);
         }
 
         public double getDoubleParameter(String key, double defaultValue) {
-            Object parameter = generalGetParameter(key);
-            if(parameter == null) return defaultValue;
-            if(!(parameter instanceof Double)) {
-                log("Параметр " + key + ", в секции commands." + this.name + ", указан не правильно! Должно быть число!");
-                return defaultValue;
-            }
-            return (Double) parameter;
+            return (Double) this.parameters.get(key);
         }
 
         public boolean getBooleanParameter(String key, boolean defaultValue) {
-            Object parameter = generalGetParameter(key);
-            if(parameter == null) return defaultValue;
-            if(!(parameter instanceof Boolean)) {
-                log("Параметр " + key + ", в секции commands." + this.name + ", указан не правильно! Должно быть true или false!");
-                return defaultValue;
-            }
-            return (Boolean) parameter;
-        }
-
-        private Object generalGetParameter(String key) {
-            if(this.parameters == null) {
-                log("Секция " + this.name + " в commands не задана!");
-                return null;
-            }
-            Object parameter = this.parameters.get(key);
-            if(parameter == null) {
-                log("Параметр " + key + ", в секции commands." + this.name + ", не задан!");
-                return null;
-            }
-            return parameter;
+            return (Boolean) this.parameters.get(key);
         }
 
         private static void log(String message) {
-            Config.messages.add(message);
+            if(MinecraftClient.getInstance().player != null) {
+                MinecraftClient.getInstance().player.sendMessage(Text.literal(message));
+            }
         }
 
-        public static ConfiguredCommand fromJson(JsonObject sector, String name) {
-            ConfiguredCommand result = new ConfiguredCommand(name);
-            if(sector == null) return result;
+        public static ConfiguredCommand fromJson(JsonObject sector, String name, RequiredCommandArgument ... args) {
             HashMap<String, Object> parameters = new HashMap<>();
+            for(RequiredCommandArgument a : args) {
+                parameters.put(a.key, a.defaultValue);
+            }
+            ConfiguredCommand result = new ConfiguredCommand(parameters, name);
+            if(sector == null) { log("КОНФИГ: Секция commands не найдена!"); return result; }
             JsonObject commandSector = sector.getAsJsonObject(name);
-            if(commandSector == null) return result;
+            if(commandSector == null) { log("КОНФИГ: Секция " + name + " в секции commands не задана!"); return result; }
+
             for(String key : commandSector.keySet()) {
                 Object put = null;
+                Object d = parameters.get(key);
+                if(d == null) {
+                    log("КОНФИГ: Аргумент " + key + "не используется в команде " + name);
+                    continue;
+                }
                 JsonElement el = commandSector.get(key);
                 if( el.isJsonPrimitive() ) {
                     JsonPrimitive primitive = el.getAsJsonPrimitive();
@@ -263,10 +240,16 @@ public class Config {
                     if(primitive.isString()) { put = primitive.getAsString(); }
                     if(primitive.isBoolean()) { put = primitive.getAsBoolean(); }
                 }
+                if(put == null || !put.getClass().getName().equals( d.getClass().getName() )) {
+                    log("КОНФИГ: Аргумент " + key + " указан не верно! Применено стандартное значение: " + d);
+                    continue;
+                }
                 parameters.put(key, put);
             }
-            return new ConfiguredCommand(parameters, name);
+            return result;
         }
     }
+
+    public record RequiredCommandArgument(String key, Object defaultValue) {}
 
 }
