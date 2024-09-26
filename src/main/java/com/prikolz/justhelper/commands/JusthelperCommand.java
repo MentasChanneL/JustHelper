@@ -34,7 +34,7 @@ public abstract class JusthelperCommand {
                                 context.getSource().sendFeedback( Text.literal(msg) );
                             }
                             context.getSource().sendFeedback(Text.literal("JustHelper > Перезагрузка конфига выполнена!")
-                                    .setStyle(JustCommand.sucsess));
+                                    .setStyle(JustCommand.success));
                             return 1;
                         })
                 )
@@ -45,7 +45,7 @@ public abstract class JusthelperCommand {
                                 context.getSource().sendFeedback(Text.literal("JustHelper > Ошибка сохранения стандартного конфига! " + e.getMessage()).setStyle(JustCommand.error));
                                 return 0;
                             }
-                            context.getSource().sendFeedback(Text.literal("JustHelper > Стандартный конфиг сохранен!").setStyle(JustCommand.sucsess));
+                            context.getSource().sendFeedback(Text.literal("JustHelper > Стандартный конфиг сохранен!").setStyle(JustCommand.success));
                             return 1;
                         })
 

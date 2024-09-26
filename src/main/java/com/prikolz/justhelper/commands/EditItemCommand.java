@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.prikolz.justhelper.Config;
 import com.prikolz.justhelper.commands.argumens.ColorArgumentType;
 import com.prikolz.justhelper.commands.argumens.TextFormattingArgumentType;
 import com.prikolz.justhelper.commands.argumens.VariantsArgumentType;
@@ -69,7 +70,7 @@ public class EditItemCommand {
         return result;
     }
 
-    private static Set<String> enchantList;
+    private static Set<String> enchantList = Set.of();
 
     private static Set<String> initEnchant() {
         Set<String> result = new HashSet<>();
@@ -112,7 +113,7 @@ public class EditItemCommand {
 
     public static void register() {
         LiteralArgumentBuilder<FabricClientCommandSource> manager =
-                ClientCommandManager.literal("edit")
+                ClientCommandManager.literal( Config.getCommandName("edit") )
                         .then( ClientCommandManager.literal("tag" )
                                 .then(ClientCommandManager.literal("add")
                                         .then( ClientCommandManager.argument("name", StringArgumentType.string())
@@ -131,9 +132,9 @@ public class EditItemCommand {
                                                             addItemTag(item, key, value);
                                                             context.getSource().sendFeedback(
                                                                     Text.literal("")
-                                                                            .append(Text.literal("Предмету установлен тег ").setStyle(JustCommand.sucsess))
+                                                                            .append(Text.literal("Предмету установлен тег ").setStyle(JustCommand.success))
                                                                             .append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
-                                                                            .append(Text.literal(" со значением ").setStyle(JustCommand.sucsess))
+                                                                            .append(Text.literal(" со значением ").setStyle(JustCommand.success))
                                                                             .append(Text.literal(value).setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
                                                             );
                                                             return 1;
@@ -151,9 +152,9 @@ public class EditItemCommand {
                                                     if(deleted) {
                                                         context.getSource().sendFeedback(
                                                                 Text.literal("")
-                                                                        .append(Text.literal("Тег ").setStyle(JustCommand.sucsess))
+                                                                        .append(Text.literal("Тег ").setStyle(JustCommand.success))
                                                                         .append(Text.literal(key).setStyle(Style.EMPTY.withColor(Formatting.WHITE)))
-                                                                        .append(Text.literal(" удален!").setStyle(JustCommand.sucsess))
+                                                                        .append(Text.literal(" удален!").setStyle(JustCommand.success))
                                                         );
                                                         return 1;
                                                     }
@@ -272,7 +273,7 @@ public class EditItemCommand {
                                                         context.getSource().sendFeedback(Text.literal("Атрибут " + name + " не найден!").setStyle(JustCommand.warn));
                                                         return 0;
                                                     }
-                                                    context.getSource().sendFeedback(Text.literal("Атрибут " + name + " удален!").setStyle(JustCommand.sucsess));
+                                                    context.getSource().sendFeedback(Text.literal("Атрибут " + name + " удален!").setStyle(JustCommand.success));
                                                     setItemMainHand(item);
                                                     return 1;
                                                 })
@@ -348,7 +349,7 @@ public class EditItemCommand {
                                                                                     );
                                                                                     item.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, attributeModifiersComponent);
                                                                                     setItemMainHand(item);
-                                                                                    context.getSource().sendFeedback(Text.literal("Предмету добавлен атрибут " + name).setStyle(JustCommand.sucsess));
+                                                                                    context.getSource().sendFeedback(Text.literal("Предмету добавлен атрибут " + name).setStyle(JustCommand.success));
                                                                                     return 1;
                                                                                 })
                                                                         )
@@ -396,13 +397,13 @@ public class EditItemCommand {
                                         .executes(context -> {
                                             if (msgItemIsNull(context)) return 0;
                                             ItemStack item = getItemMainHand();
-                                            int data = IntegerArgumentType.getInteger(context, "data");
-                                            CustomModelDataComponent component = new CustomModelDataComponent(data);
+                                            int number = IntegerArgumentType.getInteger(context, "data");
+                                            CustomModelDataComponent component = new CustomModelDataComponent(number);
                                             item.set(DataComponentTypes.CUSTOM_MODEL_DATA, component);
                                             setItemMainHand(item);
                                             context.getSource().sendFeedback(
                                                     Text.literal("Установлена модель предмета: ").setStyle(Style.EMPTY.withColor(Formatting.WHITE))
-                                                            .append(Text.literal(String.valueOf(data)).setStyle(JustCommand.warn))
+                                                            .append(Text.literal(String.valueOf(number)).setStyle(JustCommand.warn))
                                             );
                                             return 1;
                                         })
@@ -499,7 +500,7 @@ public class EditItemCommand {
                                                                 context.getSource().sendFeedback(Text.literal(err).setStyle(JustCommand.error));
                                                                 return 0;
                                                             }
-                                                            context.getSource().sendFeedback(Text.literal("Добавлены новые строчки").setStyle(JustCommand.sucsess));
+                                                            context.getSource().sendFeedback(Text.literal("Добавлены новые строчки").setStyle(JustCommand.success));
                                                             setItemMainHand(item);
                                                             return 1;
                                                         })
@@ -522,7 +523,7 @@ public class EditItemCommand {
                                                                         context.getSource().sendFeedback(Text.literal(err).setStyle(JustCommand.error));
                                                                         return 0;
                                                                     }
-                                                                    context.getSource().sendFeedback(Text.literal("Вставлены новые строчки").setStyle(JustCommand.sucsess));
+                                                                    context.getSource().sendFeedback(Text.literal("Вставлены новые строчки").setStyle(JustCommand.success));
                                                                     setItemMainHand(item);
                                                                     return 1;
                                                                 })
@@ -546,7 +547,7 @@ public class EditItemCommand {
                                                                         context.getSource().sendFeedback(Text.literal(err).setStyle(JustCommand.error));
                                                                         return 0;
                                                                     }
-                                                                    context.getSource().sendFeedback(Text.literal("Строчки заменены").setStyle(JustCommand.sucsess));
+                                                                    context.getSource().sendFeedback(Text.literal("Строчки заменены").setStyle(JustCommand.success));
                                                                     setItemMainHand(item);
                                                                     return 1;
                                                                 })
@@ -567,10 +568,10 @@ public class EditItemCommand {
                                                     }
                                                     setItemMainHand(item);
                                                     if(pos == 0) {
-                                                        context.getSource().sendFeedback(Text.literal("Последняя строчка удалена").setStyle(JustCommand.sucsess));
+                                                        context.getSource().sendFeedback(Text.literal("Последняя строчка удалена").setStyle(JustCommand.success));
                                                         return 1;
                                                     }
-                                                    context.getSource().sendFeedback(Text.literal("Строчка " + pos + " удалена").setStyle(JustCommand.sucsess));
+                                                    context.getSource().sendFeedback(Text.literal("Строчка " + pos + " удалена").setStyle(JustCommand.success));
                                                     return 1;
                                                 })
                                         )
@@ -616,82 +617,82 @@ public class EditItemCommand {
                                 )
                         )
 
-                        .then(ClientCommandManager.literal("enchantment")
-                                .then(ClientCommandManager.literal("add")
-                                        .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, enchantList))
-                                                .then(ClientCommandManager.argument("level", IntegerArgumentType.integer(0, 255))
-                                                        .executes(context -> {
-                                                            if( msgItemIsNull(context) ) return 0;
-                                                            ItemStack item = getItemMainHand();
-                                                            String key = VariantsArgumentType.getParameter(context, "id");
-                                                            short level = (short) IntegerArgumentType.getInteger(context,  "level");
-                                                            addEnchant(item, "minecraft:" + key, level);
-                                                            context.getSource().sendFeedback(
-                                                                    Text.literal("Добавлено зачарование ").setStyle(JustCommand.white)
-                                                                            .append(Text.literal(key).setStyle(JustCommand.warn))
-                                                                            .append(Text.literal(" с уровнем ").setStyle(JustCommand.white))
-                                                                            .append(Text.literal(level + "").setStyle(JustCommand.warn))
-                                                            );
-                                                            return 1;
-                                                        })
-                                                )
-                                        )
-                                )
-                                .then(ClientCommandManager.literal("remove")
-                                        .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, enchantList))
-                                                .executes(context -> {
-                                                    if( msgItemIsNull(context) ) return 0;
-                                                    ItemStack item = getItemMainHand();
-                                                    String key = VariantsArgumentType.getParameter(context, "id");
-                                                    boolean removed = removeEnchant(item, "minecraft:" + key);
-                                                    if(!removed) {
-                                                        context.getSource().sendFeedback(
-                                                                Text.literal("Зачарование ").setStyle(JustCommand.warn)
-                                                                        .append(Text.literal(key).setStyle(JustCommand.white))
-                                                                        .append(Text.literal(" не установлено!").setStyle(JustCommand.warn))
-                                                        );
-                                                        return  0;
-                                                    }
-                                                    context.getSource().sendFeedback(
-                                                            Text.literal("Зачарование ").setStyle(JustCommand.sucsess)
-                                                                    .append(Text.literal(key).setStyle(JustCommand.white))
-                                                                    .append(Text.literal(" удалено!").setStyle(JustCommand.sucsess))
-                                                    );
-                                                    return 1;
-                                                })
-                                        )
-                                )
-                                .then(ClientCommandManager.literal("clear")
-                                        .executes(context -> {
-                                            if( msgItemIsNull(context) ) return 0;
-                                            ItemStack item = getItemMainHand();
-                                            clearEnchants(item);
-                                            context.getSource().sendFeedback(
-                                                    Text.literal("Зачарования удалены").setStyle(JustCommand.sucsess)
-                                            );
-                                            return 1;
-                                        })
-                                )
-                                .executes(context -> {
-                                    if( msgItemIsNull(context) ) return 0;
-                                    ItemStack item = getItemMainHand();
-                                    HashMap<String, Short> enchs = getEnchants(item);
-                                    if(enchs.isEmpty()) {
-                                        context.getSource().sendFeedback(Text.literal("Зачарования не установлены!").setStyle(JustCommand.warn));
-                                        return 0;
-                                    }
-                                    context.getSource().sendFeedback(Text.literal("\nЗачарования предмета:\n⏷"));
-                                    for (String key : enchs.keySet()) {
-                                        context.getSource().sendFeedback(
-                                                Text.literal(" • ").setStyle(JustCommand.warn)
-                                                        .append(Text.translatable("enchantment.minecraft." + key).setStyle(JustCommand.white))
-                                                        .append(Text.literal(" " + enchs.get(key)))
-                                        );
-                                    }
-                                    context.getSource().sendFeedback(Text.literal("⏶"));
-                                    return enchs.size();
-                                })
-                        )
+                        //.then(ClientCommandManager.literal("enchantment")
+                        //        .then(ClientCommandManager.literal("add")
+                        //                .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, enchantList))
+                        //                        .then(ClientCommandManager.argument("level", IntegerArgumentType.integer(0, 255))
+                        //                                .executes(context -> {
+                        //                                    if( msgItemIsNull(context) ) return 0;
+                        //                                    ItemStack item = getItemMainHand();
+                        //                                    String key = VariantsArgumentType.getParameter(context, "id");
+                        //                                    short level = (short) IntegerArgumentType.getInteger(context,  "level");
+                        //                                    addEnchant(item, "minecraft:" + key, level);
+                        //                                    context.getSource().sendFeedback(
+                        //                                            Text.literal("Добавлено зачарование ").setStyle(JustCommand.white)
+                        //                                                    .append(Text.literal(key).setStyle(JustCommand.warn))
+                        //                                                    .append(Text.literal(" с уровнем ").setStyle(JustCommand.white))
+                        //                                                    .append(Text.literal(level + "").setStyle(JustCommand.warn))
+                        //                                    );
+                        //                                    return 1;
+                        //                                })
+                        //                        )
+                        //                )
+                        //        )
+                        //        .then(ClientCommandManager.literal("remove")
+                        //                .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, enchantList))
+                        //                        .executes(context -> {
+                        //                            if( msgItemIsNull(context) ) return 0;
+                        //                            ItemStack item = getItemMainHand();
+                        //                            String key = VariantsArgumentType.getParameter(context, "id");
+                        //                            boolean removed = removeEnchant(item, "minecraft:" + key);
+                        //                            if(!removed) {
+                        //                                context.getSource().sendFeedback(
+                        //                                        Text.literal("Зачарование ").setStyle(JustCommand.warn)
+                        //                                                .append(Text.literal(key).setStyle(JustCommand.white))
+                        //                                                .append(Text.literal(" не установлено!").setStyle(JustCommand.warn))
+                        //                                );
+                        //                                return  0;
+                        //                            }
+                        //                            context.getSource().sendFeedback(
+                        //                                    Text.literal("Зачарование ").setStyle(JustCommand.sucsess)
+                        //                                            .append(Text.literal(key).setStyle(JustCommand.white))
+                        //                                            .append(Text.literal(" удалено!").setStyle(JustCommand.sucsess))
+                        //                            );
+                        //                            return 1;
+                        //                        })
+                        //                )
+                        //        )
+                        //        .then(ClientCommandManager.literal("clear")
+                        //                .executes(context -> {
+                        //                    if( msgItemIsNull(context) ) return 0;
+                        //                    ItemStack item = getItemMainHand();
+                        //                    clearEnchants(item);
+                        //                    context.getSource().sendFeedback(
+                        //                            Text.literal("Зачарования удалены").setStyle(JustCommand.sucsess)
+                        //                    );
+                        //                    return 1;
+                        //                })
+                        //        )
+                        //        .executes(context -> {
+                        //            if( msgItemIsNull(context) ) return 0;
+                        //            ItemStack item = getItemMainHand();
+                        //            HashMap<String, Short> enchs = getEnchants(item);
+                        //            if(enchs.isEmpty()) {
+                        //                context.getSource().sendFeedback(Text.literal("Зачарования не установлены!").setStyle(JustCommand.warn));
+                        //                return 0;
+                        //            }
+                        //            context.getSource().sendFeedback(Text.literal("\nЗачарования предмета:\n⏷"));
+                        //            for (String key : enchs.keySet()) {
+                        //                context.getSource().sendFeedback(
+                        //                        Text.literal(" • ").setStyle(JustCommand.warn)
+                        //                                .append(Text.translatable("enchantment.minecraft." + key).setStyle(JustCommand.white))
+                        //                                .append(Text.literal(" " + enchs.get(key)))
+                        //                );
+                        //            }
+                        //            context.getSource().sendFeedback(Text.literal("⏶"));
+                        //            return enchs.size();
+                        //        })
+                        //)
 
                         .then(ClientCommandManager.literal("material")
                                 .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, materialMap.keySet()))
@@ -701,7 +702,7 @@ public class EditItemCommand {
                                             setItemMainHand( setItemMaterial(getItemMainHand(), id) );
                                             context.getSource().sendFeedback(
                                                     Text.literal("Тип предмета установлен на ").setStyle(JustCommand.white)
-                                                            .append(Text.literal(id).setStyle(JustCommand.sucsess))
+                                                            .append(Text.literal(id).setStyle(JustCommand.success))
                                             );
                                             return 1;
                                         })
@@ -721,7 +722,7 @@ public class EditItemCommand {
                                             if(set) {
                                                 context.getSource().sendFeedback(
                                                         Text.literal("Неразрушаемость предмета").setStyle(JustCommand.white)
-                                                                .append(Text.literal(" включена").setStyle(JustCommand.sucsess))
+                                                                .append(Text.literal(" включена").setStyle(JustCommand.success))
                                                 );
                                                 return 1;
                                             }
@@ -744,7 +745,7 @@ public class EditItemCommand {
                                             setItemMainHand(item);
                                             context.getSource().sendFeedback(
                                                     Text.literal("Установлено повреждение предмета: ").setStyle(JustCommand.white)
-                                                            .append(Text.literal("" + amount).setStyle(JustCommand.sucsess))
+                                                            .append(Text.literal("" + amount).setStyle(JustCommand.success))
                                             );
                                             return 1;
                                         }))
@@ -761,107 +762,107 @@ public class EditItemCommand {
                                 })
                         )
 
-                        .then(ClientCommandManager.literal("potion")
-                                .then(ClientCommandManager.literal("add")
-                                        .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, potionList))
-                                                .then(ClientCommandManager.argument("amplifier", IntegerArgumentType.integer(0, 256))
-                                                        .then(ClientCommandManager.argument("duration", IntegerArgumentType.integer(0))
-                                                                .executes(context -> {
-                                                                    if( msgItemIsNull(context) ) return 0;
-                                                                    ItemStack item = getItemMainHand();
-                                                                    String id = VariantsArgumentType.getParameter(context, "id");
-                                                                    int amplifier = IntegerArgumentType.getInteger(context, "amplifier");
-                                                                    int duration = IntegerArgumentType.getInteger(context, "duration");
-                                                                    setPotionEffect(id, amplifier, duration, item);
-                                                                    setItemMainHand(item);
-                                                                    context.getSource().sendFeedback(
-                                                                            Text.literal("Предмету установлен эффект зелья ").setStyle(JustCommand.white)
-                                                                                    .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.sucsess))
-                                                                                    .append(Text.literal(" силой "))
-                                                                                    .append(Text.literal("" + amplifier).setStyle(JustCommand.sucsess))
-                                                                                    .append(Text.literal(" длительностью в "))
-                                                                                    .append(Text.literal("" + duration).setStyle(JustCommand.sucsess))
-                                                                    );
-                                                                    return 1;
-                                                                })
-                                                        )
-                                                )
-                                        )
-                                )
-                                .then(ClientCommandManager.literal("remove")
-                                        .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, potionList))
-                                                .executes(context -> {
-                                                    if( msgItemIsNull(context) ) return 0;
-                                                    ItemStack item = getItemMainHand();
-                                                    String id = VariantsArgumentType.getParameter(context, "id");
-                                                    boolean result = removePotionEffect(id, item);
-                                                    if(result) {
-                                                        setItemMainHand(item);
-                                                        context.getSource().sendFeedback(
-                                                                Text.literal("Удален эффект зелья ").setStyle(JustCommand.white)
-                                                                        .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.sucsess))
-                                                        );
-                                                        return 1;
-                                                    }
-                                                    context.getSource().sendFeedback(
-                                                            Text.literal("Эффект ").setStyle(JustCommand.warn)
-                                                                    .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.white))
-                                                                    .append(Text.literal(" не найден"))
-                                                    );
-                                                    return 0;
-                                                })
-                                        )
-                                )
-                                .then(ClientCommandManager.literal("get")
-                                        .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, potionList))
-                                                .executes(context -> {
-                                                    if( msgItemIsNull(context) ) return 0;
-                                                    ItemStack item = getItemMainHand();
-                                                    String id = VariantsArgumentType.getParameter(context, "id");
-                                                    HashMap<String, PotionData> data = getPotionEffects(item);
-                                                    if(!(data.containsKey(id))) {
-                                                        context.getSource().sendFeedback(
-                                                                Text.literal("Эффект ").setStyle(JustCommand.warn)
-                                                                        .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.white))
-                                                                        .append(Text.literal(" не найден"))
-                                                        );
-                                                        return 0;
-                                                    }
-                                                    PotionData pd = data.get(id);
-                                                    context.getSource().sendFeedback(
-                                                            Text.literal(" • ").setStyle(JustCommand.white)
-                                                                    .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.warn))
-                                                                    .append(Text.literal(" " + pd.amplifier).setStyle(JustCommand.gold))
-                                                                    .append(Text.literal(" | "))
-                                                                    .append(Text.literal("" + pd.duration).setStyle(JustCommand.gold)));
-                                                    return 1;
-                                                })
-                                        )
-
-                                )
-                                .executes(context -> {
-                                    if( msgItemIsNull(context) ) return 0;
-                                    ItemStack item = getItemMainHand();
-                                    HashMap<String, PotionData> data = getPotionEffects(item);
-                                    context.getSource().sendFeedback(
-                                            Text.literal("\nУстановленные эффекты:\n⏷").setStyle(JustCommand.white)
-                                    );
-                                    for(String id : data.keySet()) {
-                                        PotionData pd = data.get(id);
-                                        context.getSource().sendFeedback(
-                                                Text.literal(" • ").setStyle(JustCommand.white)
-                                                        .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.warn))
-                                                        .append(Text.literal(" " + pd.amplifier).setStyle(JustCommand.gold))
-                                                        .append(Text.literal(" | "))
-                                                        .append(Text.literal("" + pd.duration).setStyle(JustCommand.gold))
-                                        );
-                                    }
-                                    context.getSource().sendFeedback(
-                                            Text.literal("⏶\n").setStyle(JustCommand.white)
-                                    );
-                                    return 1;
-                                })
-                        )
+                        //.then(ClientCommandManager.literal("potion")
+                        //        .then(ClientCommandManager.literal("add")
+                        //                .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, potionList))
+                        //                        .then(ClientCommandManager.argument("amplifier", IntegerArgumentType.integer(0, 256))
+                        //                                .then(ClientCommandManager.argument("duration", IntegerArgumentType.integer(0))
+                        //                                        .executes(context -> {
+                        //                                            if( msgItemIsNull(context) ) return 0;
+                        //                                            ItemStack item = getItemMainHand();
+                        //                                            String id = VariantsArgumentType.getParameter(context, "id");
+                        //                                            int amplifier = IntegerArgumentType.getInteger(context, "amplifier");
+                        //                                            int duration = IntegerArgumentType.getInteger(context, "duration");
+                        //                                            setPotionEffect(id, amplifier, duration, item);
+                        //                                            setItemMainHand(item);
+                        //                                            context.getSource().sendFeedback(
+                        //                                                    Text.literal("Предмету установлен эффект зелья ").setStyle(JustCommand.white)
+                        //                                                            .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.sucsess))
+                        //                                                            .append(Text.literal(" силой "))
+                        //                                                            .append(Text.literal("" + amplifier).setStyle(JustCommand.sucsess))
+                        //                                                            .append(Text.literal(" длительностью в "))
+                        //                                                            .append(Text.literal("" + duration).setStyle(JustCommand.sucsess))
+                        //                                            );
+                        //                                            return 1;
+                        //                                        })
+                        //                                )
+                        //                        )
+                        //                )
+                        //        )
+                        //        .then(ClientCommandManager.literal("remove")
+                        //                .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, potionList))
+                        //                        .executes(context -> {
+                        //                            if( msgItemIsNull(context) ) return 0;
+                        //                            ItemStack item = getItemMainHand();
+                        //                            String id = VariantsArgumentType.getParameter(context, "id");
+                        //                            boolean result = removePotionEffect(id, item);
+                        //                            if(result) {
+                        //                                setItemMainHand(item);
+                        //                                context.getSource().sendFeedback(
+                        //                                        Text.literal("Удален эффект зелья ").setStyle(JustCommand.white)
+                        //                                                .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.sucsess))
+                        //                                );
+                        //                                return 1;
+                        //                            }
+                        //                            context.getSource().sendFeedback(
+                        //                                    Text.literal("Эффект ").setStyle(JustCommand.warn)
+                        //                                            .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.white))
+                        //                                            .append(Text.literal(" не найден"))
+                        //                            );
+                        //                            return 0;
+                        //                        })
+                        //                )
+                        //        )
+                        //        .then(ClientCommandManager.literal("get")
+                        //                .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, potionList))
+                        //                        .executes(context -> {
+                        //                            if( msgItemIsNull(context) ) return 0;
+                        //                            ItemStack item = getItemMainHand();
+                        //                            String id = VariantsArgumentType.getParameter(context, "id");
+                        //                            HashMap<String, PotionData> data = getPotionEffects(item);
+                        //                            if(!(data.containsKey(id))) {
+                        //                                context.getSource().sendFeedback(
+                        //                                        Text.literal("Эффект ").setStyle(JustCommand.warn)
+                        //                                                .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.white))
+                        //                                                .append(Text.literal(" не найден"))
+                        //                                );
+                        //                                return 0;
+                        //                            }
+                        //                            PotionData pd = data.get(id);
+                        //                            context.getSource().sendFeedback(
+                        //                                    Text.literal(" • ").setStyle(JustCommand.white)
+                        //                                            .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.warn))
+                        //                                            .append(Text.literal(" " + pd.amplifier).setStyle(JustCommand.gold))
+                        //                                            .append(Text.literal(" | "))
+                        //                                            .append(Text.literal("" + pd.duration).setStyle(JustCommand.gold)));
+                        //                            return 1;
+                        //                        })
+                        //                )
+//
+                        //        )
+                        //        .executes(context -> {
+                        //            if( msgItemIsNull(context) ) return 0;
+                        //            ItemStack item = getItemMainHand();
+                        //            HashMap<String, PotionData> data = getPotionEffects(item);
+                        //            context.getSource().sendFeedback(
+                        //                    Text.literal("\nУстановленные эффекты:\n⏷").setStyle(JustCommand.white)
+                        //            );
+                        //            for(String id : data.keySet()) {
+                        //                PotionData pd = data.get(id);
+                        //                context.getSource().sendFeedback(
+                        //                        Text.literal(" • ").setStyle(JustCommand.white)
+                        //                                .append(Text.translatable("effect.minecraft." + id).setStyle(JustCommand.warn))
+                        //                                .append(Text.literal(" " + pd.amplifier).setStyle(JustCommand.gold))
+                        //                                .append(Text.literal(" | "))
+                        //                                .append(Text.literal("" + pd.duration).setStyle(JustCommand.gold))
+                        //                );
+                        //            }
+                        //            context.getSource().sendFeedback(
+                        //                    Text.literal("⏶\n").setStyle(JustCommand.white)
+                        //            );
+                        //            return 1;
+                        //        })
+                        //)
 
                         .executes(context -> {
                             context.getSource().sendFeedback(
@@ -985,7 +986,9 @@ public class EditItemCommand {
             }
 
             for (VarText line : lines) {
-                list.add(pos, Text.Serialization.fromJson( line.toJson(), world.getRegistryManager() ));
+                try {
+                    list.add(pos, Text.Serialization.fromJson(line.toJson(), world.getRegistryManager()));
+                }catch (Exception e) {e.printStackTrace();}
                 pos++;
             }
 

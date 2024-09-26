@@ -13,6 +13,7 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -21,12 +22,14 @@ import java.time.Instant;
 
 @Mixin(CommandExecutionC2SPacket.class)
 public class TeleportConfirm {
+
 	@Inject( method = "<init>(Ljava/lang/String;)V", at = @At("RETURN"))
 	private void inject2(String string, CallbackInfo ci) {
 		if(!Config.enableBackTeleport) return;
 		ClientPlayerEntity camera = MinecraftClient.getInstance().player;
-
 		if((string.startsWith("tp ") || string.startsWith("teleport ")) && camera != null) {
+			//if(JustMixinVars.ignoreTeleport) { JustMixinVars.ignoreTeleport = false; return; }
+			//JustMixinVars.ignoreTeleport = true;
 			BlockPos entPos = new BlockPos(4, (camera.getBlockY() - 5) / 7 * 7 + 5, camera.getBlockZ() / 4 * 4 + 1);
 			BlockEntity ent = camera.clientWorld.getBlockEntity(entPos);
 			Text text = Text.literal("");

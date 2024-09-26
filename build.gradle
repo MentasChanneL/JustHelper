@@ -38,7 +38,7 @@ dependencies {
 	includeInternal ("net.kyori:adventure-text-minimessage:4.17.0")
 	includeInternal ("net.kyori:adventure-text-serializer-gson:4.17.0")
 	includeInternal ("net.kyori:adventure-text-serializer-legacy:4.17.0")
-	
+
 }
 
 processResources {

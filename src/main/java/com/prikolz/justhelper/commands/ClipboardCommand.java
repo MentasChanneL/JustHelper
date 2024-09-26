@@ -1,6 +1,7 @@
 package com.prikolz.justhelper.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.prikolz.justhelper.Config;
 import com.prikolz.justhelper.vars.Texts;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -11,7 +12,7 @@ import net.minecraft.util.Formatting;
 public abstract class ClipboardCommand {
     public static void register() {
         LiteralArgumentBuilder<FabricClientCommandSource>  manager =
-                ClientCommandManager.literal("clipboard")
+                ClientCommandManager.literal( Config.getCommandName("clipboard") )
                 .then( ClientCommandManager.literal("+clip" )
                         .executes(context -> {
                             String err = Texts.run(true);

@@ -4,8 +4,17 @@
     "compile": false
   },
   "enable_back_teleport": true,
-  "texts_command": {
-    "+clip_limit": 5000
+  "commands": {
+    "clipboard": {
+      "name": "clipboard",
+      "clip_limit": 5000
+    },
+    "signs": {
+      "name": "signs"
+    },
+    "edit": {
+      "name": "edit"
+    }
   },
   "command_buffer_cooldown": 700,
   "short-commands": {
