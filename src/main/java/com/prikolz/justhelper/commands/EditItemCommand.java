@@ -1,14 +1,15 @@
 package com.prikolz.justhelper.commands;
 
-import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.prikolz.justhelper.Config;
 import com.prikolz.justhelper.commands.argumens.ColorArgumentType;
+import com.prikolz.justhelper.commands.argumens.EnchantsArgumentType;
 import com.prikolz.justhelper.commands.argumens.TextFormattingArgumentType;
 import com.prikolz.justhelper.commands.argumens.VariantsArgumentType;
+import com.prikolz.justhelper.commands.edit.EICAttributes;
 import com.prikolz.justhelper.vars.text.VarText;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -19,7 +20,6 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.*;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -41,51 +41,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EditItemCommand {
-    private static final HashMap<String, String> operationSym = initOperationSym();
-
-    private static HashMap<String, String> initOperationSym() {
-        HashMap<String, String> result = new HashMap<>();
-        result.put("addition", "+");
-        result.put("multiply_total", "*");
-        result.put("multiply_base", "%");
-        return result;
-    }
-
-    private static final HashMap<String, EntityAttribute> attributeList = attributesMap();
-
-    private static HashMap<String, EntityAttribute> attributesMap() {
-        HashMap<String, EntityAttribute> result = new HashMap<>();
-
-        result.put("max_health", EntityAttributes.GENERIC_MAX_HEALTH.value());
-        result.put("follow_range", EntityAttributes.GENERIC_FOLLOW_RANGE.value());
-        result.put("knockback_resistance", EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE.value());
-        result.put("movement_speed", EntityAttributes.GENERIC_MOVEMENT_SPEED.value());
-        result.put("attack_damage", EntityAttributes.GENERIC_ATTACK_DAMAGE.value());
-        result.put("armor", EntityAttributes.GENERIC_ARMOR.value());
-        result.put("armor_toughness", EntityAttributes.GENERIC_ARMOR_TOUGHNESS.value());
-        result.put("attack_speed", EntityAttributes.GENERIC_ATTACK_SPEED.value());
-        result.put("luck", EntityAttributes.GENERIC_LUCK.value());
-        result.put("max_absorption", EntityAttributes.GENERIC_MAX_ABSORPTION.value());
-
-        return result;
-    }
-
-    private static Set<String> enchantList = Set.of();
-
-    private static Set<String> initEnchant() {
-        Set<String> result = new HashSet<>();
-
-        MinecraftClient client = MinecraftClient.getInstance();
-        if(client.world == null) return result;
-
-        Registry<Enchantment> reg = client.world.getRegistryManager().get(RegistryKeys.ENCHANTMENT);
-
-        for(RegistryKey<Enchantment> key : reg.getKeys() ) {
-            result.add(key.getValue().getPath());
-        }
-
-        return result;
-    }
 
     private static final HashMap<String, Item> materialMap = initMaterialMap();
 
@@ -261,137 +216,7 @@ public class EditItemCommand {
                                 })
 
                         )
-                        .then(ClientCommandManager.literal("attribute")
-                                .then(ClientCommandManager.literal("remove")
-                                        .then(ClientCommandManager.argument("name", StringArgumentType.string())
-                                                .executes(context -> {
-                                                    if( msgItemIsNull(context) ) return 0;
-                                                    String name = StringArgumentType.getString(context, "name");
-                                                    ItemStack item = getItemMainHand();
-                                                    boolean del = removeAttribute(item, name);
-                                                    if(!del) {
-                                                        context.getSource().sendFeedback(Text.literal("Атрибут " + name + " не найден!").setStyle(JustCommand.warn));
-                                                        return 0;
-                                                    }
-                                                    context.getSource().sendFeedback(Text.literal("Атрибут " + name + " удален!").setStyle(JustCommand.success));
-                                                    setItemMainHand(item);
-                                                    return 1;
-                                                })
-                                        )
-                                )
-                                .then(ClientCommandManager.literal("get")
-                                        .then(ClientCommandManager.argument("name", StringArgumentType.string())
-                                                .executes(context -> {
-                                                    if (msgItemIsNull(context)) return 0;
-                                                    ItemStack item = getItemMainHand();
-                                                    String name = StringArgumentType.getString(context, "name");
-                                                    AttributeModifiersComponent component = item.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
-                                                    Text errorNotFound = Text.literal("Атрибут " + name + " не найден!").setStyle(JustCommand.warn);
-                                                    if (component == null) {
-                                                        context.getSource().sendFeedback(errorNotFound);
-                                                        return 0;
-                                                    }
-                                                    Text out = null;
-                                                    for (AttributeModifiersComponent.Entry attributeEntry: component.modifiers()) {
-                                                        RegistryEntry<EntityAttribute> attribute = attributeEntry.attribute();
-                                                        EntityAttributeModifier modifier = attributeEntry.modifier();
-                                                        AttributeModifierSlot slot = attributeEntry.slot();
-
-                                                        if (name.equals(attribute.getIdAsString())) {
-                                                            out = Text.literal(" • ")
-                                                                    .append(Text.literal(attribute.getIdAsString()).setStyle(JustCommand.warn
-                                                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать название\n" + attribute.getIdAsString())))
-                                                                            .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, attribute.getIdAsString()))
-                                                                    ))
-                                                                    .append(Text.literal(" | ").setStyle(JustCommand.white))
-                                                                    .append(Text.translatable("item.modifiers." + slot.name()).setStyle(JustCommand.aqua))
-                                                                    .append(Text.literal(" ").setStyle(JustCommand.white))
-                                                                    .append(Text.translatable(attribute.value().getTranslationKey()).setStyle(JustCommand.gold))
-                                                                    .append(Text.literal(" " + operationSym.get(modifier.operation().asString()) + modifier.value()).setStyle(JustCommand.white));
-                                                        }
-                                                    }
-                                                    if (out == null) {
-                                                        context.getSource().sendFeedback(errorNotFound);
-                                                        return 0;
-                                                    }
-                                                    context.getSource().sendFeedback(out);
-
-                                                    return 1;
-                                                })
-                                        )
-                                )
-                                .then(ClientCommandManager.literal("add")
-                                        .then(ClientCommandManager.argument("name", StringArgumentType.string())
-                                                .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, attributeList.keySet()))
-                                                        .then(ClientCommandManager.argument("slot", new VariantsArgumentType("slot.unknown", true, "chest", "mainhand", "offhand", "head", "legs", "feet"))
-                                                                .then(ClientCommandManager.argument("value", DoubleArgumentType.doubleArg())
-                                                                        .then(ClientCommandManager.argument("action", new VariantsArgumentType("argument.entity.options.unknown", true, operationSym.keySet() ))
-                                                                                .executes(context -> {
-                                                                                    if (msgItemIsNull(context)) return 0;
-                                                                                    ItemStack item = getItemMainHand();
-                                                                                    String name = StringArgumentType.getString(context, "name");
-                                                                                    removeAttribute(item, name);
-                                                                                    String id = StringArgumentType.getString(context, "id");
-                                                                                    String slot = VariantsArgumentType.getParameter(context, "slot");
-                                                                                    double value = DoubleArgumentType.getDouble(context, "value");
-                                                                                    String action = VariantsArgumentType.getParameter(context, "action");
-                                                                                    EntityAttribute attribute = attributeList.get(id);
-                                                                                    EntityAttributeModifier mod = new EntityAttributeModifier(Identifier.of(name), value, EntityAttributeModifier.Operation.valueOf(action.toUpperCase()));
-                                                                                    EquipmentSlot equipmentSlot = EquipmentSlot.valueOf(slot.toUpperCase());
-                                                                                    AttributeModifiersComponent attributeModifiersComponent = item.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
-                                                                                    if (attributeModifiersComponent == null) {
-                                                                                        attributeModifiersComponent = new AttributeModifiersComponent(new LinkedList<>(), true);
-                                                                                    }
-                                                                                    Registry<EntityAttribute> registry = Registries.ATTRIBUTE;
-                                                                                    RegistryEntry<EntityAttribute> registryEntry = registry.getEntry(attribute);
-                                                                                    attributeModifiersComponent.modifiers().add(
-                                                                                            new AttributeModifiersComponent.Entry(registryEntry, mod, AttributeModifierSlot.forEquipmentSlot(equipmentSlot))
-                                                                                    );
-                                                                                    item.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, attributeModifiersComponent);
-                                                                                    setItemMainHand(item);
-                                                                                    context.getSource().sendFeedback(Text.literal("Предмету добавлен атрибут " + name).setStyle(JustCommand.success));
-                                                                                    return 1;
-                                                                                })
-                                                                        )
-                                                                )
-                                                        )
-                                                )
-                                        )
-                                )
-                                .executes(context -> {
-                                    if (msgItemIsNull(context)) return 0;
-                                    ItemStack item = getItemMainHand();
-                                    context.getSource().sendFeedback(Text.literal(""));
-                                    context.getSource().sendFeedback(Text.literal("Список атрибутов:"));
-                                    context.getSource().sendFeedback(Text.literal("⏷"));
-                                    List<AttributeModifiersComponent.Entry> attributes = new LinkedList<>();
-                                    AttributeModifiersComponent component = item.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
-                                    if (component != null) {
-                                        attributes = component.modifiers();
-                                    }
-
-                                    for (AttributeModifiersComponent.Entry attribute : attributes) {
-                                        EntityAttributeModifier mod = attribute.modifier();
-                                        RegistryEntry<EntityAttribute> attributeRegistryEntry = attribute.attribute();
-                                        AttributeModifierSlot slot = attribute.slot();
-
-                                        context.getSource().sendFeedback(
-                                                Text.literal(" • ")
-                                                        .append(Text.literal(attributeRegistryEntry.getIdAsString()).setStyle(JustCommand.warn
-                                                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Скопировать название\n" + attributeRegistryEntry.getIdAsString())))
-                                                                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, attributeRegistryEntry.getIdAsString()))
-                                                        ))
-                                                        .append(Text.literal(" | ").setStyle(JustCommand.white))
-                                                        .append(Text.translatable("item.modifiers." + slot.name()).setStyle(JustCommand.aqua))
-                                                        .append(Text.literal(" ").setStyle(JustCommand.white))
-                                                        .append(Text.translatable(attributeRegistryEntry.value().getTranslationKey()).setStyle(JustCommand.gold))
-                                                        .append(Text.literal(" " + operationSym.get(mod.operation().asString()) + mod.value()).setStyle(JustCommand.white))
-                                        );
-                                    }
-                                    context.getSource().sendFeedback(Text.literal("⏶"));
-                                    return 1;
-                                })
-                        )
+                        .then(EICAttributes.register())
                         .then(ClientCommandManager.literal("model")
                                 .then(ClientCommandManager.argument("number", IntegerArgumentType.integer())
                                         .executes(context -> {
@@ -617,82 +442,82 @@ public class EditItemCommand {
                                 )
                         )
 
-                        //.then(ClientCommandManager.literal("enchantment")
-                        //        .then(ClientCommandManager.literal("add")
-                        //                .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, enchantList))
-                        //                        .then(ClientCommandManager.argument("level", IntegerArgumentType.integer(0, 255))
-                        //                                .executes(context -> {
-                        //                                    if( msgItemIsNull(context) ) return 0;
-                        //                                    ItemStack item = getItemMainHand();
-                        //                                    String key = VariantsArgumentType.getParameter(context, "id");
-                        //                                    short level = (short) IntegerArgumentType.getInteger(context,  "level");
-                        //                                    addEnchant(item, "minecraft:" + key, level);
-                        //                                    context.getSource().sendFeedback(
-                        //                                            Text.literal("Добавлено зачарование ").setStyle(JustCommand.white)
-                        //                                                    .append(Text.literal(key).setStyle(JustCommand.warn))
-                        //                                                    .append(Text.literal(" с уровнем ").setStyle(JustCommand.white))
-                        //                                                    .append(Text.literal(level + "").setStyle(JustCommand.warn))
-                        //                                    );
-                        //                                    return 1;
-                        //                                })
-                        //                        )
-                        //                )
-                        //        )
-                        //        .then(ClientCommandManager.literal("remove")
-                        //                .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, enchantList))
-                        //                        .executes(context -> {
-                        //                            if( msgItemIsNull(context) ) return 0;
-                        //                            ItemStack item = getItemMainHand();
-                        //                            String key = VariantsArgumentType.getParameter(context, "id");
-                        //                            boolean removed = removeEnchant(item, "minecraft:" + key);
-                        //                            if(!removed) {
-                        //                                context.getSource().sendFeedback(
-                        //                                        Text.literal("Зачарование ").setStyle(JustCommand.warn)
-                        //                                                .append(Text.literal(key).setStyle(JustCommand.white))
-                        //                                                .append(Text.literal(" не установлено!").setStyle(JustCommand.warn))
-                        //                                );
-                        //                                return  0;
-                        //                            }
-                        //                            context.getSource().sendFeedback(
-                        //                                    Text.literal("Зачарование ").setStyle(JustCommand.sucsess)
-                        //                                            .append(Text.literal(key).setStyle(JustCommand.white))
-                        //                                            .append(Text.literal(" удалено!").setStyle(JustCommand.sucsess))
-                        //                            );
-                        //                            return 1;
-                        //                        })
-                        //                )
-                        //        )
-                        //        .then(ClientCommandManager.literal("clear")
-                        //                .executes(context -> {
-                        //                    if( msgItemIsNull(context) ) return 0;
-                        //                    ItemStack item = getItemMainHand();
-                        //                    clearEnchants(item);
-                        //                    context.getSource().sendFeedback(
-                        //                            Text.literal("Зачарования удалены").setStyle(JustCommand.sucsess)
-                        //                    );
-                        //                    return 1;
-                        //                })
-                        //        )
-                        //        .executes(context -> {
-                        //            if( msgItemIsNull(context) ) return 0;
-                        //            ItemStack item = getItemMainHand();
-                        //            HashMap<String, Short> enchs = getEnchants(item);
-                        //            if(enchs.isEmpty()) {
-                        //                context.getSource().sendFeedback(Text.literal("Зачарования не установлены!").setStyle(JustCommand.warn));
-                        //                return 0;
-                        //            }
-                        //            context.getSource().sendFeedback(Text.literal("\nЗачарования предмета:\n⏷"));
-                        //            for (String key : enchs.keySet()) {
-                        //                context.getSource().sendFeedback(
-                        //                        Text.literal(" • ").setStyle(JustCommand.warn)
-                        //                                .append(Text.translatable("enchantment.minecraft." + key).setStyle(JustCommand.white))
-                        //                                .append(Text.literal(" " + enchs.get(key)))
-                        //                );
-                        //            }
-                        //            context.getSource().sendFeedback(Text.literal("⏶"));
-                        //            return enchs.size();
-                        //        })
-                        //)
+                        .then(ClientCommandManager.literal("enchantment")
+                                .then(ClientCommandManager.literal("add")
+                                        .then(ClientCommandManager.argument("id", new EnchantsArgumentType())
+                                                .then(ClientCommandManager.argument("level", IntegerArgumentType.integer(0, 255))
+                                                        .executes(context -> {
+                                                            if( msgItemIsNull(context) ) return 0;
+                                                            ItemStack item = getItemMainHand();
+                                                            String key = VariantsArgumentType.getParameter(context, "id");
+                                                            short level = (short) IntegerArgumentType.getInteger(context,  "level");
+                                                            addEnchant(item, key, level);
+                                                            context.getSource().sendFeedback(
+                                                                    Text.literal("Добавлено зачарование ").setStyle(JustCommand.white)
+                                                                            .append(Text.literal(key).setStyle(JustCommand.warn))
+                                                                            .append(Text.literal(" с уровнем ").setStyle(JustCommand.white))
+                                                                            .append(Text.literal(level + "").setStyle(JustCommand.warn))
+                                                            );
+                                                            return 1;
+                                                        })
+                                                )
+                                        )
+                                )
+                                .then(ClientCommandManager.literal("remove")
+                                        .then(ClientCommandManager.argument("id", new EnchantsArgumentType())
+                                                .executes(context -> {
+                                                    if( msgItemIsNull(context) ) return 0;
+                                                    ItemStack item = getItemMainHand();
+                                                    String key = VariantsArgumentType.getParameter(context, "id");
+                                                    boolean removed = removeEnchant(item, key);
+                                                    if(!removed) {
+                                                        context.getSource().sendFeedback(
+                                                                Text.literal("Зачарование ").setStyle(JustCommand.warn)
+                                                                        .append(Text.literal(key).setStyle(JustCommand.white))
+                                                                        .append(Text.literal(" не установлено!").setStyle(JustCommand.warn))
+                                                        );
+                                                        return  0;
+                                                    }
+                                                    context.getSource().sendFeedback(
+                                                            Text.literal("Зачарование ").setStyle(JustCommand.success)
+                                                                    .append(Text.literal(key).setStyle(JustCommand.white))
+                                                                    .append(Text.literal(" удалено!").setStyle(JustCommand.success))
+                                                    );
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(ClientCommandManager.literal("clear")
+                                        .executes(context -> {
+                                            if( msgItemIsNull(context) ) return 0;
+                                            ItemStack item = getItemMainHand();
+                                            clearEnchants(item);
+                                            context.getSource().sendFeedback(
+                                                    Text.literal("Зачарования удалены").setStyle(JustCommand.success)
+                                            );
+                                            return 1;
+                                        })
+                                )
+                                .executes(context -> {
+                                    if( msgItemIsNull(context) ) return 0;
+                                    ItemStack item = getItemMainHand();
+                                    HashMap<String, Short> enchs = getEnchants(item);
+                                    if(enchs.isEmpty()) {
+                                        context.getSource().sendFeedback(Text.literal("Зачарования не установлены!").setStyle(JustCommand.warn));
+                                        return 0;
+                                    }
+                                    context.getSource().sendFeedback(Text.literal("\nЗачарования предмета:\n⏷"));
+                                    for (String key : enchs.keySet()) {
+                                        context.getSource().sendFeedback(
+                                                Text.literal(" • ").setStyle(JustCommand.warn)
+                                                        .append(Text.translatable("enchantment.minecraft." + key).setStyle(JustCommand.white))
+                                                        .append(Text.literal(" " + enchs.get(key)))
+                                        );
+                                    }
+                                    context.getSource().sendFeedback(Text.literal("⏶"));
+                                    return enchs.size();
+                                })
+                        )
 
                         .then(ClientCommandManager.literal("material")
                                 .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, materialMap.keySet()))
@@ -884,13 +709,13 @@ public class EditItemCommand {
         JustCommand.registerInDispacher(manager);
     }
 
-    private static boolean msgItemIsNull(CommandContext<FabricClientCommandSource> context) {
+    public static boolean msgItemIsNull(CommandContext<FabricClientCommandSource> context) {
         if(getItemMainHand() != null && !getItemMainHand().isEmpty()) return false;
         context.getSource().sendFeedback(Text.literal("JustHelper > Не получилось редактировать. Возьмите предмет в руку!").setStyle(JustCommand.error));
         return true;
     }
 
-    private static ItemStack getItemMainHand() {
+    public static ItemStack getItemMainHand() {
         try {
             return MinecraftClient.getInstance().player.getInventory().getStack(MinecraftClient.getInstance().player.getInventory().selectedSlot);
         }catch (Exception e) {
@@ -898,28 +723,11 @@ public class EditItemCommand {
         }
     }
 
-    private static void setItemMainHand(ItemStack item) {
+    public static void setItemMainHand(ItemStack item) {
         try {
             MinecraftClient.getInstance().player.getInventory().setStack(MinecraftClient.getInstance().player.getInventory().selectedSlot, item);
         }catch (Exception ignore) {
         }
-    }
-
-    private static boolean removeAttribute(ItemStack item, String name) {
-        AtomicBoolean result = new AtomicBoolean(false);
-        AttributeModifiersComponent component = item.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
-        if (component == null) return false;
-        List<AttributeModifiersComponent.Entry> attributes = component.modifiers();
-        if (attributes == null || attributes.isEmpty()) return false;
-        attributes.removeIf(entry -> {
-            if (name.replace("minecraft:", "").equals(entry.attribute().getIdAsString())) {
-                result.set(true);
-                return true;
-            }
-            return false;
-        });
-
-        return result.get();
     }
 
     //private static Set<String> getFlags(ItemStack item) {
@@ -1046,16 +854,16 @@ public class EditItemCommand {
     }
 
     private static boolean removeEnchant(@NotNull ItemStack item, @NotNull String key) {
-        ItemEnchantmentsComponent component = item.get(DataComponentTypes.ENCHANTMENTS);
-        if (component != null && !component.isEmpty()) {
-            ItemEnchantmentsComponent.Builder newComponent = new ItemEnchantmentsComponent.Builder(component);
-            for (RegistryEntry<Enchantment> enchantment : component.getEnchantments()) {
-                if (key.equals(enchantment.getIdAsString().replace("minecraft:", ""))) {
-                    newComponent.remove(enchantmentRegistryEntry -> enchantmentRegistryEntry.equals(enchantment));
-                    item.set(DataComponentTypes.ENCHANTMENTS, newComponent.build());
-                    return true;
-                }
-            }
+        MinecraftClient client = MinecraftClient.getInstance();
+        ClientWorld world = client.world;
+
+        if (world != null) {
+            EnchantmentHelper.apply(item, builder -> {
+                Registry<Enchantment> registry = world.getRegistryManager().get(RegistryKeys.ENCHANTMENT);
+                Optional<RegistryEntry.Reference<Enchantment>> registryEntry = registry.getEntry(Identifier.ofVanilla(key));
+                registryEntry.ifPresent(enchantmentReference -> builder.set(enchantmentReference, 0));
+            });
+            return true;
         }
         return false;
     }
