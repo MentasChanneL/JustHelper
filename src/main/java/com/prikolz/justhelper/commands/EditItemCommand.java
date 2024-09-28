@@ -971,9 +971,9 @@ public class EditItemCommand {
         if (world == null) return "Что-то пошло не так во время выполнения команды. Находитесь ли вы в мире на данный момент?";
         if (pos < 0) return "Номер линии должен быть больше -1!";
         LoreComponent loreComponent = item.get(DataComponentTypes.LORE);
-        List<Text> list = new LinkedList<>();
+        List<Text> list = new ArrayList<>();
         if (loreComponent != null) {
-            list = loreComponent.styledLines();
+            list.addAll(loreComponent.styledLines());
         }
         if(isNew) {
             if(pos == 0) {

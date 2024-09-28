@@ -29,6 +29,12 @@ public class Sign {
 
     public static final HashMap<String, Sign> signs = new HashMap<>();
 
+    public static void clear() { signs.clear(); }
+    public static void add(BlockPos pos) {
+        Sign sign = new Sign(pos.getX(), pos.getY(), pos.getZ());
+        Sign.signs.put( pos.getX() + " " + pos.getY() + " " + pos.getZ(), sign );
+    }
+
     public static void searchSigns(FabricClientCommandSource source, String search, boolean printAll) {
         if(Config.signGenerateMethod == null && Config.useCustomOutputClass) {
             source.sendFeedback(

@@ -5,8 +5,6 @@ import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 
 public interface VarText {
 
@@ -38,7 +36,7 @@ public interface VarText {
         return switch (type) {
             case JSON -> new JsonText(text);
             case STYLED -> new StyledText(text);
-            case FORMATTED -> new FormattedText(text);
+            case COLORED -> new ColoredText(text);
             case PLAIN -> new PlainText(text);
         };
     }
@@ -52,6 +50,6 @@ public interface VarText {
         return result;
     }
 
-    enum TextType{ STYLED, PLAIN, JSON, FORMATTED }
+    enum TextType{ STYLED, PLAIN, JSON, COLORED }
 
 }

@@ -1,6 +1,7 @@
 package com.prikolz.justhelper.vars.text;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 import net.minecraft.item.ItemStack;
@@ -27,7 +28,7 @@ public class StyledText implements VarText {
 
     @Override
     public String toJson() {
-        return JSONComponentSerializer.json().serialize(this.component);
+        return JSONComponentSerializer.json().serialize( Component.empty().decoration(TextDecoration.ITALIC, false).append(this.component) );
     }
 
     @Override

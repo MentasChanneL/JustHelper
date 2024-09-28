@@ -6,20 +6,20 @@ import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minecraft.item.ItemStack;
 
-public class FormattedText implements VarText {
+public class ColoredText implements VarText {
 
     private String text;
     private Component component;
 
-    public FormattedText(String string) {
-        setFormattedText(string);
+    public ColoredText(String string) {
+        setColoredText(string);
     }
 
     private String format(String str) {
         return str.replaceAll("&","§").replaceAll("%space%", " ").replaceAll("%empty%", "");
     }
 
-    public void setFormattedText(String string) {
+    public void setColoredText(String string) {
         this.text = string;
         this.component = Component.empty().decoration(TextDecoration.ITALIC, false).append( LegacyComponentSerializer.legacySection().deserialize(format(string)) );
     }

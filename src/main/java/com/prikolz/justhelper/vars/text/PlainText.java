@@ -16,7 +16,7 @@ public class PlainText implements VarText {
 
     @Override
     public String toJson() {
-        return "{\"text\":\"" + this.text + "\"}";
+        return "{\"text\":\"" + this.text + "\", \"italic\": false}";
     }
 
     @Override
