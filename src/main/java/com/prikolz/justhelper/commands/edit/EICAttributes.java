@@ -145,8 +145,7 @@ public abstract class EICAttributes {
                 .executes(context -> {
                     if (EditItemCommand.msgItemIsNull(context)) return 0;
                     ItemStack item = EditItemCommand.getItemMainHand();
-                    context.getSource().sendFeedback(Text.literal(""));
-                    context.getSource().sendFeedback(Text.literal("Список атрибутов:"));
+                    context.getSource().sendFeedback(Text.literal("\nСписок атрибутов:"));
                     context.getSource().sendFeedback(Text.literal("⏷"));
 
                     HashMap<String, AttributeModifiersComponent.Entry> attributes = getAttributes(item);
