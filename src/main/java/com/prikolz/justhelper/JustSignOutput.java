@@ -44,8 +44,22 @@ public abstract class JustSignOutput {
         int mathFloor = mathFloor(y);
         String floor = toMini("(" + mathFloor + ")");
         MutableText hoverText = Text.literal("");
+        MutableText copyText = Text.literal(" ");
+        int i = 1;
         for (Text line : lines) {
             hoverText.append(line.copy().setStyle(Style.EMPTY.withColor(Formatting.WHITE))).append(Text.literal("\n"));
+            if(line.getString() != null && !line.getString().isEmpty()) {
+                copyText.append(
+                        Text.of(toMini("(" + i + ")")).copy()
+                                .setStyle( Style.EMPTY.withHoverEvent(
+                                                        new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("Скопировать: " + line.getString()))
+                                                )
+                                                .withClickEvent(
+                                                        new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, line.getString()))
+                                )
+                );
+            }
+            i++;
         }
         String xyz = x + " " + y + " " + z;
         hoverText.append(
@@ -69,7 +83,9 @@ public abstract class JustSignOutput {
                 .setStyle( Style.EMPTY
                         .withClickEvent( new ClickEvent( ClickEvent.Action.RUN_COMMAND, "/tp " + xyz))
                         .withHoverEvent( new HoverEvent( HoverEvent.Action.SHOW_TEXT, hoverText ))
-                );
+                )
+                .append(copyText)
+        ;
         return text;
     }
 }

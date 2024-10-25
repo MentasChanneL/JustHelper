@@ -84,7 +84,6 @@ public class ShortCommand {
             String name = this.names.get(index);
             String key = this.structure[index];
             SCArgument arg = this.arguments.get( key );
-            System.out.println("k " + key + " = " + arg);
             if(arg == null) continue;
             if(mladshy == null) {
                 mladshy = ClientCommandManager.argument(name, arg).executes(context -> run(context));
@@ -92,7 +91,8 @@ public class ShortCommand {
             }
             mladshy = ClientCommandManager.argument(name, arg).then(mladshy);
         }
-        manager.then(mladshy);
+        if(mladshy != null) { manager.then(mladshy); } else{ manager.executes(context -> run(context)); }
+
         JustCommand.registerInDispacher(manager);
     }
 
@@ -135,13 +135,16 @@ public class ShortCommand {
         for(String key : arguments.keySet()) {
             args.put(key, SCArgument.getFromJson( arguments.getAsJsonObject(key) ));
         }
-        JsonArray arr = json.getAsJsonArray("structure");
-        String[] structure = new String[arr.size()];
-        int i = 0;
-        for(JsonElement el : arr) {
-            structure[i] = el.getAsJsonPrimitive().getAsString();
-            i++;
-        }
+        String[] structure = new String[0];
+        try {
+            JsonArray arr = json.getAsJsonArray("structure");
+            structure = new String[arr.size()];
+            int i = 0;
+            for (JsonElement el : arr) {
+                structure[i] = el.getAsJsonPrimitive().getAsString();
+                i++;
+            }
+        }catch (Exception ignore) {}
         String run = json.getAsJsonPrimitive("run").getAsString();
         return new ShortCommand(args, structure, run);
     }

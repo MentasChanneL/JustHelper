@@ -5,7 +5,9 @@
   "mixins": [
     "SignBlockMixin",
     "ClientWorldMixin",
-    "TeleportConfirm"
+    "TeleportConfirm",
+    "InventoryPacket",
+    "SetItemPacket"
   ],
   "injectors": {
     "defaultRequire": 1

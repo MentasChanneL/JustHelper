@@ -24,16 +24,5 @@ public class ClientWorldMixin {
     @Inject(method = "<init>" ,at = @At("RETURN"))
     private void injectInit(ClientPlayNetworkHandler networkHandler, ClientWorld.Properties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> dimensionTypeEntry, int loadDistance, int simulationDistance, Supplier<Profiler> profiler, WorldRenderer worldRenderer, boolean debugWorld, long seed, CallbackInfo ci) {
         Sign.clear();
-        //Timer timer = new Timer();
-//
-        //TimerTask task = new TimerTask() {
-        //    @Override
-        //    public void run() {
-        //        EditItemCommand.initEnchant();
-        //        timer.cancel();
-//
-        //    }
-        //};
-        //timer.schedule(task, 5000);
     }
 }
