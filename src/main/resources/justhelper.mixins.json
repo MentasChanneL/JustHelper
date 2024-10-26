@@ -6,8 +6,7 @@
     "SignBlockMixin",
     "ClientWorldMixin",
     "TeleportConfirm",
-    "InventoryPacket",
-    "SetItemPacket"
+    "PlayerInventoryMixin"
   ],
   "injectors": {
     "defaultRequire": 1

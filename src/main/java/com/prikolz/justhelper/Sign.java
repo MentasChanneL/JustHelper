@@ -28,6 +28,7 @@ public class Sign {
     }
 
     public static final HashMap<String, Sign> signs = new HashMap<>();
+    public static List<SignInfo> history = null;
 
     public static void clear() { signs.clear(); }
     public static void add(BlockPos pos) {
@@ -76,6 +77,7 @@ public class Sign {
         for(SignInfo info : data) {
             source.sendFeedback( info.generate() );
         }
+        history = data;
         source.sendFeedback(Text.literal(""));
     }
 }
