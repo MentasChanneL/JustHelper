@@ -54,7 +54,7 @@ public class Sign {
                 ent = (SignBlockEntity) world.getBlockEntity(new BlockPos(sign.x, sign.y, sign.z));
                 if(ent == null) continue;
                 for(Text text : ent.getFrontText().getMessages(false)) {
-                    if(text.getString().contains(search.toLowerCase())) founded = true;
+                    if(text.getString().toLowerCase().contains(search.toLowerCase())) founded = true;
                 }
                 if(!founded) continue;
                 data.add( new SignInfo(sign.x, sign.y, sign.z, ent.getFrontText().getMessages(false)) );

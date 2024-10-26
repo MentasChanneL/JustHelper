@@ -30,7 +30,7 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	//includeInternal ("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
+	includeInternal ("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
 
 	implementation ("net.kyori:adventure-text-minimessage:4.17.0")
 	implementation ("net.kyori:adventure-text-serializer-gson:4.17.0")

@@ -1,15 +1,14 @@
 package com.prikolz.justhelper;
 
 import com.prikolz.justhelper.commands.*;
+import com.prikolz.justhelper.vars.VarHistory;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.client.MinecraftClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Justhelper implements ModInitializer {
 
     public static final Logger LOGGER = LoggerFactory.getLogger("justhelper");
-	public static final String MOD_ID = "justhelper";
 
 	@Override
 	public void onInitialize() {
@@ -21,8 +20,9 @@ public class Justhelper implements ModInitializer {
 			for(String msg : Config.messages) {
 				LOGGER.warn( msg );
 			}
+			VarHistory.loadFromFile();
         } catch (Exception e) {
-            LOGGER.error("Error config: " + e.getMessage());
+            LOGGER.error("Error: " + e.getMessage());
 			e.printStackTrace();
         }
 	}

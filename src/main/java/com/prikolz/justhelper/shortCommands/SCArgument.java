@@ -20,7 +20,7 @@ public abstract class SCArgument implements ArgumentType<String> {
             for (JsonElement el : json.getAsJsonArray("suggestions").asList()) {
                 suggestions.add(el.getAsString());
             }
-        }catch (Exception e) { suggestions = null; }
+        }catch (Exception e) { suggestions = Set.of(); }
         switch (type) {
             case STRING:
                 return new SCStringArgument(suggestions);
@@ -44,6 +44,20 @@ public abstract class SCArgument implements ArgumentType<String> {
                 String split = null;
                 try { split = json.getAsJsonPrimitive("split").getAsString(); } catch (Exception ignore) {}
                 return new SCGreedyArgument(suggestions, parser, split);
+            case HISTORY:
+                byte historyType = 0;
+                try {
+                   String historyId = json.getAsJsonPrimitive("var").getAsString();
+                   switch (historyId) {
+                       case "game":
+                           historyType = 1;
+                       case "save":
+                           historyType = 2;
+                       case "local":
+                           historyType = 3;
+                   }
+                } catch (Exception ignore) {}
+                return new SCHistoryArgument(suggestions, historyType);
         }
         return null;
     }
@@ -52,5 +66,5 @@ public abstract class SCArgument implements ArgumentType<String> {
         return Type.valueOf(name.toUpperCase());
     }
 
-    public enum Type { GREEDY, INT, DOUBLE, STRING, VARIANT }
+    public enum Type { GREEDY, INT, DOUBLE, STRING, VARIANT, HISTORY }
 }
