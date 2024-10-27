@@ -47,23 +47,12 @@
         "arguments": {
           "name": {
             "type": "greedy",
-            "suggestions": [],
+            "suggestions": ["@history.local"],
             "split": " "
           }
         },
         "structure": ["name"],
         "run": "var local ${1}"
-      },
-      "vh": {
-        "arguments": {
-          "name": {
-            "type": "history",
-            "var": "game",
-            "suggestions": []
-          }
-        },
-        "structure": ["name"],
-        "run": "var ${1}"
       }
     }
   }

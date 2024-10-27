@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.prikolz.justhelper.shortCommands.SCArgument;
+import com.prikolz.justhelper.shortCommands.arguments.suggestions.MultiSuggestions;
 import net.minecraft.command.CommandSource;
 
 import java.util.Set;
@@ -16,7 +17,7 @@ public class SCGreedyArgument extends SCArgument {
     public SCArgument.Type parseType;
     public String split;
 
-    public SCGreedyArgument(Set<String> suggestions, SCArgument.Type parseType, String split) {
+    public SCGreedyArgument(MultiSuggestions suggestions, SCArgument.Type parseType, String split) {
         this.suggestions = suggestions;
         this.parseType = parseType == null ? Type.STRING : parseType;
         this.split = split;

@@ -4,23 +4,47 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.prikolz.justhelper.shortCommands.arguments.*;
+import com.prikolz.justhelper.shortCommands.arguments.suggestions.HistorySuggestions;
+import com.prikolz.justhelper.shortCommands.arguments.suggestions.JustSuggestions;
+import com.prikolz.justhelper.shortCommands.arguments.suggestions.MultiSuggestions;
+import com.prikolz.justhelper.shortCommands.arguments.suggestions.ShortSuggestions;
+import com.prikolz.justhelper.vars.VarHistory;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public abstract class SCArgument implements ArgumentType<String> {
 
-    public Set<String> suggestions;
+    public MultiSuggestions suggestions;
+
+    private static ShortSuggestions getSuggestions(String id) {
+        return switch (id) {
+            case "@history.game" -> new HistorySuggestions((byte) 1);
+            case "@history.save" -> new HistorySuggestions((byte) 2);
+            case "@history.local" -> new HistorySuggestions((byte) 3);
+            default -> null;
+        };
+    }
 
     static SCArgument getFromJson(JsonObject json) {
         Type type = getType(json.getAsJsonPrimitive("type").getAsString());
-        Set<String> suggestions;
+        MultiSuggestions suggestions = new MultiSuggestions();
         try {
-            suggestions = new HashSet<>();
+            JustSuggestions justSuggestion = new JustSuggestions(new HashSet<>());
             for (JsonElement el : json.getAsJsonArray("suggestions").asList()) {
-                suggestions.add(el.getAsString());
+                String sEl = el.getAsString();
+                ShortSuggestions s = getSuggestions(sEl);
+                if(s != null) {
+                    suggestions.add(justSuggestion);
+                    suggestions.add(s);
+                    justSuggestion = new JustSuggestions(new HashSet<>());
+                    continue;
+                }
+                justSuggestion.add(sEl);
             }
-        }catch (Exception e) { suggestions = Set.of(); }
+            suggestions.add(justSuggestion);
+        }catch (Exception ignore) {}
         switch (type) {
             case STRING:
                 return new SCStringArgument(suggestions);
@@ -44,20 +68,6 @@ public abstract class SCArgument implements ArgumentType<String> {
                 String split = null;
                 try { split = json.getAsJsonPrimitive("split").getAsString(); } catch (Exception ignore) {}
                 return new SCGreedyArgument(suggestions, parser, split);
-            case HISTORY:
-                byte historyType = 0;
-                try {
-                   String historyId = json.getAsJsonPrimitive("var").getAsString();
-                   switch (historyId) {
-                       case "game":
-                           historyType = 1;
-                       case "save":
-                           historyType = 2;
-                       case "local":
-                           historyType = 3;
-                   }
-                } catch (Exception ignore) {}
-                return new SCHistoryArgument(suggestions, historyType);
         }
         return null;
     }
@@ -66,5 +76,5 @@ public abstract class SCArgument implements ArgumentType<String> {
         return Type.valueOf(name.toUpperCase());
     }
 
-    public enum Type { GREEDY, INT, DOUBLE, STRING, VARIANT, HISTORY }
+    public enum Type { GREEDY, INT, DOUBLE, STRING, VARIANT }
 }

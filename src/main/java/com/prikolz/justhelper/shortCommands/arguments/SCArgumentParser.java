@@ -3,6 +3,7 @@ package com.prikolz.justhelper.shortCommands.arguments;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.prikolz.justhelper.shortCommands.SCArgument;
+import com.prikolz.justhelper.shortCommands.arguments.suggestions.MultiSuggestions;
 import net.minecraft.text.Text;
 
 import java.util.Set;
@@ -36,12 +37,15 @@ public abstract class SCArgumentParser {
             throw DOUBLE_PARSE_ERROR.create(element);
         }
     }
-    public static void parseVariant(String element, Set<String> suggestions) throws CommandSyntaxException {
+    public static void parseVariant(String element, MultiSuggestions suggestions) throws CommandSyntaxException {
         if(suggestions == null) return;
-        if(!suggestions.contains(element)) throw VARIANT_NOT_FOUND.create(element);
+        for(String s : suggestions) {
+            if(s.equals(element)) return;
+        }
+        throw VARIANT_NOT_FOUND.create(element);
     }
 
-    public static void parse(String element, SCArgument.Type type, Set<String> suggestions) throws CommandSyntaxException {
+    public static void parse(String element, SCArgument.Type type, MultiSuggestions suggestions) throws CommandSyntaxException {
         switch (type) {
             case INT -> parseInt(element);
             case DOUBLE -> parseDouble(element);

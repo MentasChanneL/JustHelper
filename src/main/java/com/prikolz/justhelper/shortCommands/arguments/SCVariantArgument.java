@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.prikolz.justhelper.shortCommands.SCArgument;
+import com.prikolz.justhelper.shortCommands.arguments.suggestions.MultiSuggestions;
 import net.minecraft.command.CommandSource;
 
 import java.util.Set;
@@ -16,7 +17,7 @@ public class SCVariantArgument extends SCArgument {
 
     private final StringArgumentType sat;
 
-    public SCVariantArgument(Set<String> suggestions) {
+    public SCVariantArgument(MultiSuggestions suggestions) {
         this.suggestions = suggestions;
         this.sat = StringArgumentType.string();
     }

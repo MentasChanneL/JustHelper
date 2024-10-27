@@ -8,6 +8,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.prikolz.justhelper.shortCommands.SCArgument;
+import com.prikolz.justhelper.shortCommands.arguments.suggestions.MultiSuggestions;
 import net.minecraft.command.CommandSource;
 import net.minecraft.text.Text;
 
@@ -27,7 +28,7 @@ public class SCIntArgument extends SCArgument {
     public Integer min;
     private final StringArgumentType sat;
 
-    public SCIntArgument(Set<String> suggestions, Integer max, Integer min) {
+    public SCIntArgument(MultiSuggestions suggestions, Integer max, Integer min) {
         this.suggestions = suggestions;
         this.max = max;
         this.min = min;
