@@ -10,7 +10,8 @@
       "clip_limit": 5000
     },
     "signs": {
-      "name": "signs"
+      "name": "signs",
+      "flip": true
     },
     "edit": {
       "name": "edit"
@@ -52,6 +53,17 @@
         },
         "structure": ["name"],
         "run": "var local ${1}"
+      },
+      "vh": {
+        "arguments": {
+          "name": {
+            "type": "history",
+            "var": "game",
+            "suggestions": []
+          }
+        },
+        "structure": ["name"],
+        "run": "var ${1}"
       }
     }
   }

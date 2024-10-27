@@ -4,7 +4,6 @@ import com.google.gson.*;
 import com.prikolz.justhelper.Justhelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
@@ -20,7 +19,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class VarHistory {
@@ -28,7 +26,6 @@ public class VarHistory {
     public static HashMap<String, VarHistory> worldsHistory = new HashMap<>();
 
     public static void analyseItemStack(ItemStack item) {
-        System.out.println("analis");
         NbtComponent c = item.get(DataComponentTypes.CUSTOM_DATA);
         if(c == null) return;
         try {
@@ -38,7 +35,6 @@ public class VarHistory {
             String type = value.getString("scope");
             String name = value.getString("variable");
             VarHistory history = getHistory();
-            System.out.println(worldName() + " " + type + " " + name);
             if(history == null) {
                 history = new VarHistory(worldName(), new HashSet<>(), new HashSet<>(), new HashSet<>());
                 worldsHistory.put(worldName(), history);
@@ -117,6 +113,7 @@ public class VarHistory {
             JsonArray save = worldSector.getAsJsonArray("save");
             JsonArray local = worldSector.getAsJsonArray("local");
             VarHistory vh = new VarHistory(key, getValues(game), getValues(save), getValues(local));
+            newWorldsHistory.put(key, vh);
         }
         worldsHistory = newWorldsHistory;
     }

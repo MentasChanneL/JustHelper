@@ -77,7 +77,7 @@ public class Config {
         commandBufferCD = (int) getParamJson("command_buffer_cooldown", main, Integer.class.getName(), 700);
         JsonObject commandsSector = (JsonObject) getParamJson("commands", main, JsonObject.class.getName(), new JsonObject());
         commands.clear();
-        commands.put("signs", ConfiguredCommand.fromJson(commandsSector, "signs", new RequiredCommandArgument("name", "signs")));
+        commands.put("signs", ConfiguredCommand.fromJson(commandsSector, "signs", new RequiredCommandArgument("name", "signs"), new RequiredCommandArgument("flip", true)));
         commands.put("edit", ConfiguredCommand.fromJson(commandsSector, "edit", new RequiredCommandArgument("name", "edit")));
         commands.put("clipboard", ConfiguredCommand.fromJson(commandsSector, "clipboard", new RequiredCommandArgument("name", "clipboard"), new RequiredCommandArgument("clip_limit", 5000.0)));
 
