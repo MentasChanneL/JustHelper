@@ -53,6 +53,28 @@
         },
         "structure": ["name"],
         "run": "var local ${1}"
+      },
+      "vg": {
+        "arguments": {
+          "name": {
+            "type": "greedy",
+            "suggestions": ["@history.game"],
+            "split": " "
+          }
+        },
+        "structure": ["name"],
+        "run": "var ${1}"
+      },
+      "vs": {
+        "arguments": {
+          "name": {
+            "type": "greedy",
+            "suggestions": ["@history.save"],
+            "split": " "
+          }
+        },
+        "structure": ["name"],
+        "run": "var save ${1}"
       }
     }
   }

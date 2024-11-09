@@ -2,6 +2,7 @@ package com.prikolz.justhelper;
 
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.block.entity.SignBlockEntity;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -79,5 +80,11 @@ public class Sign {
         }
         history = data;
         source.sendFeedback(Text.literal(""));
+    }
+
+    public static SignInfo getInfo(Sign sign) {
+        var ent = (SignBlockEntity) MinecraftClient.getInstance().world.getBlockEntity(new BlockPos(sign.x, sign.y, sign.z));
+        if(ent == null) return null;
+        return new SignInfo(sign.x, sign.y, sign.z, ent.getFrontText().getMessages(false));
     }
 }
