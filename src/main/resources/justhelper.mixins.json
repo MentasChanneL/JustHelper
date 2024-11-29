@@ -6,7 +6,9 @@
     "SignBlockMixin",
     "ClientWorldMixin",
     "TeleportConfirm",
-    "PlayerInventoryMixin"
+    "PlayerInventoryMixin",
+    "ChatScreenMixin",
+    "ChatHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1

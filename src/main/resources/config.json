@@ -18,6 +18,10 @@
     }
   },
   "command_buffer_cooldown": 700,
+  "click_message": {
+    "right": "<run>txt <message>",
+    "middle": ""
+  },
   "short-commands": {
     "enable": true,
     "constructor": {

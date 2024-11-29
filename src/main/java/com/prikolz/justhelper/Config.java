@@ -34,6 +34,7 @@ public class Config {
     public static List<String> messages = new ArrayList<>();
     public static int commandBufferCD = 700;
     public static HashMap<String, ConfiguredCommand> commands = new HashMap<>();
+    public static ClickMessageConfig clickMessageConfig = null;
 
     public static void initialize() throws Exception {
 
@@ -80,6 +81,7 @@ public class Config {
         commands.put("signs", ConfiguredCommand.fromJson(commandsSector, "signs", new RequiredCommandArgument("name", "signs"), new RequiredCommandArgument("flip", true)));
         commands.put("edit", ConfiguredCommand.fromJson(commandsSector, "edit", new RequiredCommandArgument("name", "edit")));
         commands.put("clipboard", ConfiguredCommand.fromJson(commandsSector, "clipboard", new RequiredCommandArgument("name", "clipboard"), new RequiredCommandArgument("clip_limit", 5000.0)));
+        clickMessageConfig = ClickMessageConfig.parse(main);
 
         SignsCommand.register();
         ClipboardCommand.register();
@@ -251,5 +253,21 @@ public class Config {
     }
 
     public record RequiredCommandArgument(String key, Object defaultValue) {}
+    public static class ClickMessageConfig {
+        public final String clickRight;
+        public final String clickMiddle;
+
+        public ClickMessageConfig(String clickRight, String clickMiddle) {
+            this.clickRight = clickRight;
+            this.clickMiddle = clickMiddle;
+        }
+
+        public static ClickMessageConfig parse(JsonObject main) {
+            JsonObject sector = (JsonObject) getParamJson("click_message", main, JsonObject.class.getName(), new JsonObject());
+            String r = (String) getParamJson("right", sector, String.class.getName(), "<run>txt <message>");
+            String m = (String) getParamJson("middle", sector, String.class.getName(), "");
+            return new ClickMessageConfig(r, m);
+        }
+    }
 
 }
