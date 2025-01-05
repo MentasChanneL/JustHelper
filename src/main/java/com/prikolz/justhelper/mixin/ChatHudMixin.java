@@ -1,10 +1,9 @@
 package com.prikolz.justhelper.mixin;
 
-import com.prikolz.justhelper.util.ClientUtils;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.Style;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,8 +32,8 @@ public class ChatHudMixin {
             double d = this.toChatLineX(x);
             double e = this.toChatLineY(y);
             int i = this.getMessageLineIndex(d, e);
-            ClientUtils.line = i;
-            ClientUtils.msgs = messages;
+            //ChatHudLine line = messages.get(i);
+
         }catch (Throwable ignore) {}
     }
 }

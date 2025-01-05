@@ -62,6 +62,12 @@ public abstract class EICAttributes {
         result.put("attack_speed", EntityAttributes.GENERIC_ATTACK_SPEED.value());
         result.put("luck", EntityAttributes.GENERIC_LUCK.value());
         result.put("max_absorption", EntityAttributes.GENERIC_MAX_ABSORPTION.value());
+        result.put("gravity", EntityAttributes.GENERIC_GRAVITY.value());
+        result.put("entity_interaction_range", EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE.value());
+        result.put("block_interaction_range", EntityAttributes.PLAYER_BLOCK_INTERACTION_RANGE.value());
+        result.put("step_height", EntityAttributes.GENERIC_STEP_HEIGHT.value());
+        result.put("player_sneaking_speed", EntityAttributes.PLAYER_SNEAKING_SPEED.value());
+        result.put("block_break_speed", EntityAttributes.PLAYER_BLOCK_BREAK_SPEED.value());
 
         return result;
     }

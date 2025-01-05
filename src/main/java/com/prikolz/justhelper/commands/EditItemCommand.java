@@ -9,8 +9,7 @@ import com.prikolz.justhelper.commands.argumens.ColorArgumentType;
 import com.prikolz.justhelper.commands.argumens.EnchantsArgumentType;
 import com.prikolz.justhelper.commands.argumens.TextFormattingArgumentType;
 import com.prikolz.justhelper.commands.argumens.VariantsArgumentType;
-import com.prikolz.justhelper.commands.edit.EICAttributes;
-import com.prikolz.justhelper.commands.edit.EICPotion;
+import com.prikolz.justhelper.commands.edit.*;
 import com.prikolz.justhelper.vars.text.VarText;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -393,7 +392,7 @@ public class EditItemCommand {
                         )
 
                         .then(ClientCommandManager.literal("count")
-                                .then(ClientCommandManager.argument("count", IntegerArgumentType.integer(1, 64))
+                                .then(ClientCommandManager.argument("count", IntegerArgumentType.integer(1, 99))
                                         .executes(context -> {
                                             if( msgItemIsNull(context) ) return 0;
                                             ItemStack item = getItemMainHand();
@@ -549,34 +548,11 @@ public class EditItemCommand {
                                 )
                         )
 
-                        .then(ClientCommandManager.literal("damage")
-                                .then(ClientCommandManager.literal("set").then(ClientCommandManager.argument("amount", IntegerArgumentType.integer(0))
-                                        .executes(context -> {
-                                            if( msgItemIsNull(context) ) return 0;
-                                            ItemStack item = getItemMainHand();
-                                            int amount = IntegerArgumentType.getInteger(context, "amount");
-                                            item.setDamage(amount);
-                                            setItemMainHand(item);
-                                            context.getSource().sendFeedback(
-                                                    Text.literal("Установлено повреждение предмета: ").setStyle(JustCommand.white)
-                                                            .append(Text.literal("" + amount).setStyle(JustCommand.success))
-                                            );
-                                            return 1;
-                                        }))
-                                )
-                                .executes(context -> {
-                                    if( msgItemIsNull(context) ) return 0;
-                                    ItemStack item = getItemMainHand();
-                                    int amount = item.getDamage();
-                                    context.getSource().sendFeedback(
-                                            Text.literal("Текущее повреждение предмета: ").setStyle(JustCommand.white)
-                                                    .append(Text.literal("" + amount).setStyle(JustCommand.warn))
-                                    );
-                                    return 1;
-                                })
-                        )
-
                         .then(EICPotion.register())
+                        .then(EICFlag.register())
+                        .then(EICDamage.register())
+                        .then(EICCount.register())
+                        .then(EICFireResistance.register())
 
                         .executes(context -> {
                             context.getSource().sendFeedback(
@@ -591,6 +567,9 @@ public class EditItemCommand {
                                             .append( Text.literal("\n\nunbreakable - Включить/Выключить неразрушаемость предмета.").setStyle(JustCommand.gold) )
                                             .append( Text.literal("\n\nmaterial - Установить тип предмета.").setStyle(JustCommand.gold) )
                                             .append( Text.literal("\n\npotion - Добавляет/Удаляет/Получает эффекты зелий предмета.").setStyle(JustCommand.gold) )
+                                            .append( Text.literal("\n\nflag - Скрытие/Отображение флагов предмета.").setStyle(JustCommand.gold) )
+                                            .append( Text.literal("\n\ncount - Установить количество и максимальное количество предметов в стаке.").setStyle(JustCommand.gold) )
+                                            .append( Text.literal("\n\nfire_resistant - Установить неуязвимость к огню.").setStyle(JustCommand.gold) )
                             );
                             return 1;
                         })
