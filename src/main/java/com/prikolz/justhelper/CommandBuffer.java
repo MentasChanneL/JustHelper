@@ -27,7 +27,11 @@ public abstract class CommandBuffer {
                         String command = buffer.get(0);
                         buffer.remove(0);
                         ClientPlayerEntity player = MinecraftClient.getInstance().player;
-                        player.networkHandler.sendChatCommand(command);
+                        if(command.startsWith("§")) {
+                            player.networkHandler.sendChatMessage(command.substring(1).replaceAll("%s", " "));
+                        }else {
+                            player.networkHandler.sendChatCommand(command);
+                        }
                     }catch (Exception e) {
                         buffer.clear();
                     }

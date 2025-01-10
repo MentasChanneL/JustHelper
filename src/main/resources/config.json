@@ -15,6 +15,9 @@
     },
     "edit": {
       "name": "edit"
+    },
+    "multimsg": {
+      "name": "multimsg"
     }
   },
   "command_buffer_cooldown": 700,

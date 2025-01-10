@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.prikolz.justhelper.commands.ClipboardCommand;
 import com.prikolz.justhelper.commands.EditItemCommand;
+import com.prikolz.justhelper.commands.MultiMsgCommand;
 import com.prikolz.justhelper.commands.SignsCommand;
 import com.prikolz.justhelper.shortCommands.SCConfig;
 import net.fabricmc.loader.api.FabricLoader;
@@ -81,11 +82,13 @@ public class Config {
         commands.put("signs", ConfiguredCommand.fromJson(commandsSector, "signs", new RequiredCommandArgument("name", "signs"), new RequiredCommandArgument("flip", true)));
         commands.put("edit", ConfiguredCommand.fromJson(commandsSector, "edit", new RequiredCommandArgument("name", "edit")));
         commands.put("clipboard", ConfiguredCommand.fromJson(commandsSector, "clipboard", new RequiredCommandArgument("name", "clipboard"), new RequiredCommandArgument("clip_limit", 5000.0)));
+        commands.put("multimsg", ConfiguredCommand.fromJson(commandsSector, "multimsg", new RequiredCommandArgument("name", "multimsg")));
         clickMessageConfig = ClickMessageConfig.parse(main);
 
         SignsCommand.register();
         ClipboardCommand.register();
         EditItemCommand.register();
+        MultiMsgCommand.register();
 
         try {
             SCConfig.parse(main);
