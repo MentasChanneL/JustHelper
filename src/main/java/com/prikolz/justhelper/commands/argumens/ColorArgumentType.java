@@ -10,11 +10,11 @@ import net.minecraft.text.Text;
 public class ColorArgumentType implements ArgumentType<String> {
 
     private static DynamicCommandExceptionType IILEGAL_SYNTAX = new DynamicCommandExceptionType((name) -> {
-        return Text.literal("Недопустимый символ в цвете " + name);
+        return Text.literal("Недопустимый символ в цвете '" + name + "'! Используйте команду /color для генерации цвета.");
     });
 
     private static DynamicCommandExceptionType COLOR_SIZE = new DynamicCommandExceptionType((name) -> {
-        return Text.literal("Длинна цвета должна составлять 7 символов!");
+        return Text.literal("Кодировка цвета должна составлять 6 символов(без решетки)! Например #AABBCC. Используйте команду /color для генерации цвета.");
     });
 
     public static int getParameter(final CommandContext<?> context, final String name) {
@@ -24,9 +24,10 @@ public class ColorArgumentType implements ArgumentType<String> {
 
     @Override
     public String parse(StringReader reader) throws CommandSyntaxException {
-        if (!reader.canRead() || reader.peek() != '#') {
-            throw COLOR_SIZE.create(reader.read());
-        }
+        if (!reader.canRead()) throw COLOR_SIZE.create(reader.read());
+        if(reader.peek() == '&') reader.skip();
+        if(reader.peek() != '#') throw COLOR_SIZE.create(reader.read());
+
         reader.skip();
         if (!reader.canRead(6)) {
             throw COLOR_SIZE.create(reader.read());

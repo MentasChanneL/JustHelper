@@ -1,6 +1,7 @@
 package com.prikolz.justhelper.commands.edit;
 
 import com.mojang.brigadier.arguments.DoubleArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.prikolz.justhelper.commands.EditItemCommand;
@@ -68,6 +69,11 @@ public abstract class EICAttributes {
         result.put("step_height", EntityAttributes.GENERIC_STEP_HEIGHT.value());
         result.put("player_sneaking_speed", EntityAttributes.PLAYER_SNEAKING_SPEED.value());
         result.put("block_break_speed", EntityAttributes.PLAYER_BLOCK_BREAK_SPEED.value());
+        result.put("sweeping_damage", EntityAttributes.PLAYER_SWEEPING_DAMAGE_RATIO.value());
+        result.put("scale", EntityAttributes.GENERIC_SCALE.value());
+        result.put("attack_knockback", EntityAttributes.GENERIC_ATTACK_KNOCKBACK.value());
+        result.put("fall_damage_multiplier", EntityAttributes.GENERIC_FALL_DAMAGE_MULTIPLIER.value());
+        result.put("safe_fall_distance", EntityAttributes.GENERIC_SAFE_FALL_DISTANCE.value());
 
         return result;
     }
@@ -148,6 +154,58 @@ public abstract class EICAttributes {
                                 )
                         )
                 )
+                .then(ClientCommandManager.literal("move")
+                        .then(ClientCommandManager.argument("name", StringArgumentType.string())
+                                .then(ClientCommandManager.argument("move", IntegerArgumentType.integer())
+                                        .executes(context -> {
+                                            if (EditItemCommand.msgItemIsNull(context)) return 0;
+                                            ItemStack item = EditItemCommand.getItemMainHand();
+                                            String id = StringArgumentType.getString(context, "name");
+                                            int move = IntegerArgumentType.getInteger(context, "move");
+                                            if(moveAttribute(item, id, move)) {
+                                                context.getSource().sendFeedback(
+                                                        Text.literal("Аттрибут ")
+                                                                .append(Text.literal(id).setStyle(JustCommand.white))
+                                                                .append(Text.literal(" перемещен на "))
+                                                                .append(Text.literal("" + move).setStyle(JustCommand.white))
+                                                                .append(Text.literal(" индекс"))
+                                                                .setStyle(JustCommand.warn)
+                                                );
+                                                return 1;
+                                            }else{
+                                                context.getSource().sendFeedback(
+                                                        Text.literal("Аттрибут ")
+                                                                .append(Text.literal(id).setStyle(JustCommand.white))
+                                                                .append(Text.literal(" не найден!"))
+                                                                .setStyle(JustCommand.error)
+                                                );
+                                                return 0;
+                                            }
+                                        })
+                                )
+                        )
+                )
+                .then(ClientCommandManager.literal("clear")
+                        .executes(context -> {
+                            if (EditItemCommand.msgItemIsNull(context)) return 0;
+                            ItemStack item = EditItemCommand.getItemMainHand();
+                            HashMap<String, AttributeModifiersComponent.Entry> attributes = getAttributes(item);
+                            if(attributes.isEmpty()) {
+                                context.getSource().sendFeedback(
+                                        Text.literal("Аттрибуты не найдены!").setStyle(JustCommand.warn)
+                                );
+                                return 0;
+                            }
+                            cleatAttributes(item);
+                            context.getSource().sendFeedback(
+                                    Text.literal("Очищено ")
+                                            .append(Text.literal(attributes.size() + "").setStyle(JustCommand.white))
+                                            .append(Text.literal(" атрибутов!"))
+                                            .setStyle(JustCommand.error)
+                            );
+                            return 1;
+                        })
+                )
                 .executes(context -> {
                     if (EditItemCommand.msgItemIsNull(context)) return 0;
                     ItemStack item = EditItemCommand.getItemMainHand();
@@ -225,6 +283,33 @@ public abstract class EICAttributes {
         EntityAttributeModifier modifier = new EntityAttributeModifier(Identifier.of(name), amount, operationMap.get(operation));
         list.add( new AttributeModifiersComponent.Entry( registryEntry, modifier, eqSlots.get(slot)) );
         item.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(list, true));
+    }
+
+    private static boolean moveAttribute(ItemStack item, String name, int index) {
+        AttributeModifiersComponent attributes = item.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+        if(attributes == null) return false;
+        int entryIndex = -1;
+        AttributeModifiersComponent.Entry entry = null;
+        for(int i = 0; i < attributes.modifiers().size(); i++) {
+            entry = attributes.modifiers().get(i);
+            if(entry.modifier().id().getPath().equals(name)) {
+                entryIndex = i;
+                break;
+            }
+        }
+        if(entryIndex == -1) return false;
+        int move = index % attributes.modifiers().size();
+        attributes.modifiers().remove(entryIndex);
+        if(move >= attributes.modifiers().size()) {
+            attributes.modifiers().add(entry);
+        }else{
+            attributes.modifiers().add(move, entry);
+        }
+        return true;
+    }
+
+    private static void cleatAttributes(ItemStack item) {
+        item.remove(DataComponentTypes.ATTRIBUTE_MODIFIERS);
     }
 
 }

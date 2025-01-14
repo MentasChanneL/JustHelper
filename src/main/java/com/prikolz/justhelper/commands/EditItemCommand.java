@@ -1,5 +1,8 @@
 package com.prikolz.justhelper.commands;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -43,6 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class EditItemCommand {
 
     private static final HashMap<String, Item> materialMap = initMaterialMap();
+    private static HashMap<String, String> tagsBuffer = null;
 
     private static HashMap<String, Item> initMaterialMap() {
         HashMap<String, Item> result = new HashMap<>();
@@ -139,6 +143,148 @@ public class EditItemCommand {
                                                 })
                                         )
                                 )
+                                .then(ClientCommandManager.literal("copy")
+                                        .executes(context -> {
+                                            if( msgItemIsNull(context) ) return 0;
+                                            ItemStack item = getItemMainHand();
+                                            HashMap<String, String> tags = getItemTags(item);
+                                            if(tags.isEmpty()) {
+                                                context.getSource().sendFeedback(Text.literal("JustHelper > Теги не найдены").setStyle(JustCommand.warn));
+                                                return 0;
+                                            }
+                                            tagsBuffer = tags;
+                                            StringBuilder b = new StringBuilder("{");
+                                            int i = 0;
+                                            for(String k : tags.keySet()) {
+                                                String v = tags.get(k);
+                                                if(i != 0) b.append(", ");
+                                                b.append('"')
+                                                        .append(k)
+                                                        .append('"')
+                                                        .append(':')
+                                                        .append('"')
+                                                        .append(v.replaceAll("\\\\", "\\\\\\\\").replaceAll("\"", "\\\\\""))
+                                                        .append('"');
+                                                i++;
+                                            }
+                                            b.append('}');
+                                            context.getSource().sendFeedback(
+                                                    Text.literal("Теги сохранены в память Java. Вы можете получить данные в буффер обмена нажав ")
+                                                            .append(Text.literal("сюда")
+                                                                    .setStyle(JustCommand.white
+                                                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(b.toString())))
+                                                                            .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, b.toString()))
+                                                                            .withUnderline(true)
+                                                                    ))
+                                                            .setStyle(JustCommand.success)
+                                            );
+                                            return 1;
+                                        })
+                                )
+                                .then(ClientCommandManager.literal("clear")
+                                        .executes(context -> {
+                                            if( msgItemIsNull(context) ) return 0;
+                                            ItemStack item = getItemMainHand();
+                                            HashMap<String, String> tags = getItemTags(item);
+                                            if(tags.isEmpty()) {
+                                                context.getSource().sendFeedback(Text.literal("JustHelper > Теги не найдены").setStyle(JustCommand.warn));
+                                                return 0;
+                                            }
+                                            StringBuilder b = new StringBuilder("{");
+                                            int i = 0;
+                                            for(String k : tags.keySet()) {
+                                                String v = tags.get(k);
+                                                if(i != 0) b.append(", ");
+                                                b.append('"')
+                                                        .append(k)
+                                                        .append('"')
+                                                        .append(':')
+                                                        .append('"')
+                                                        .append(v.replaceAll("\\\\", "\\\\\\\\").replaceAll("\"", "\\\\\""))
+                                                        .append('"');
+                                                i++;
+                                            }
+                                            b.append('}');
+                                            clearItemTags(item);
+                                            context.getSource().sendFeedback(
+                                                    Text.literal("Очищено ")
+                                                            .append(Text.literal(i + "").setStyle(JustCommand.white))
+                                                            .append(Text.literal(" тегов! Резервная копия → "))
+                                                            .append(Text.literal("нажми").setStyle(
+                                                                    JustCommand.white
+                                                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(b.toString())))
+                                                                            .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, b.toString()))
+                                                            ))
+                                                            .setStyle(JustCommand.warn)
+                                            );
+                                            return 1;
+                                        })
+                                )
+                                .then(ClientCommandManager.literal("paste")
+                                        .then(ClientCommandManager.argument("tags", StringArgumentType.greedyString())
+                                                .executes(context -> {
+                                                    if( msgItemIsNull(context) ) return 0;
+                                                    ItemStack item = getItemMainHand();
+                                                    try {
+                                                    String tags = StringArgumentType.getString(context, "tags");
+                                                    JsonObject json = (JsonObject) JsonParser.parseString(tags);
+                                                    String v;
+                                                    HashMap<String, String> newTags = new HashMap<>();
+                                                    for(String k : json.keySet()) {
+                                                        try {
+                                                            v = json.get(k).getAsString();
+                                                            if (v == null) throw new NullPointerException();
+                                                            newTags.put(k, v);
+                                                        }catch (Exception e) {
+                                                            context.getSource().sendFeedback(
+                                                                    Text.literal("Ошибка в ключе " + k + " : " + e.getMessage())
+                                                                            .setStyle(JustCommand.error)
+                                                            );
+                                                            return 0;
+                                                        }
+                                                    }
+                                                    for(String k : newTags.keySet()) {
+                                                        addItemTag(item, k, newTags.get(k));
+                                                    }
+
+                                                    context.getSource().sendFeedback(
+                                                            Text.literal("Установлено ")
+                                                                    .append(Text.literal(newTags.size() + "").setStyle(JustCommand.white))
+                                                                    .append(Text.literal(" тегов!"))
+                                                                    .setStyle(JustCommand.success)
+                                                    );
+
+                                                    }catch (Exception e) {
+                                                        context.getSource().sendFeedback(
+                                                                Text.literal("Невозможно прочитать json: " + e.getMessage())
+                                                                        .setStyle(JustCommand.error)
+                                                        );
+                                                        return 0;
+                                                    }
+                                                    return 1;
+                                                })
+                                        )
+                                        .executes(context -> {
+                                            if( msgItemIsNull(context) ) return 0;
+                                            ItemStack item = getItemMainHand();
+                                            if(tagsBuffer == null || tagsBuffer.isEmpty()) {
+                                                context.getSource().sendFeedback(Text.literal("JustHelper > Буфер java пуст").setStyle(JustCommand.warn));
+                                                return 0;
+                                            }
+                                            int i = 0;
+                                            for(String k : tagsBuffer.keySet()) {
+                                                addItemTag(item, k, tagsBuffer.get(k));
+                                                i++;
+                                            }
+                                            context.getSource().sendFeedback(
+                                                    Text.literal("Предмету добавлено ")
+                                                            .append(Text.literal(i + "").setStyle(JustCommand.white))
+                                                            .append(Text.literal(" тегов"))
+                                                            .setStyle(JustCommand.success)
+                                            );
+                                            return 1;
+                                        })
+                                )
                                 .executes(context -> {
                                     if( msgItemIsNull(context) ) return 0;
                                     ItemStack item = getItemMainHand();
@@ -151,7 +297,7 @@ public class EditItemCommand {
                                     for(String key : tags.keySet()) {
                                         String value = tags.get(key);
                                         String cutValue = value;
-                                        if(cutValue.length() > 10) cutValue = cutValue.substring(0, 10) + "...";
+                                        if(cutValue.length() > 15) cutValue = cutValue.substring(0, 15) + "...";
                                         context.getSource().sendFeedback(
                                                 Text.literal(" • ").setStyle(Style.EMPTY.withColor(Formatting.WHITE))
                                                         .append(key).setStyle(Style.EMPTY
@@ -210,7 +356,7 @@ public class EditItemCommand {
                                         .executes(context -> {
                                             if (msgItemIsNull(context)) return 0;
                                             ItemStack item = getItemMainHand();
-                                            int number = IntegerArgumentType.getInteger(context, "data");
+                                            int number = IntegerArgumentType.getInteger(context, "number");
                                             CustomModelDataComponent component = new CustomModelDataComponent(number);
                                             item.set(DataComponentTypes.CUSTOM_MODEL_DATA, component);
                                             setItemMainHand(item);
@@ -236,57 +382,6 @@ public class EditItemCommand {
                                     return data;
                                 })
                         )
-                        //.then(ClientCommandManager.literal("flag")
-                        //        .then(ClientCommandManager.literal("add")
-                        //                .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, flagsList.keySet()))
-                        //                        .executes(context -> {
-                        //                            if( msgItemIsNull(context) ) return 0;
-                        //                            ItemStack item = getItemMainHand();
-                        //                            String id = VariantsArgumentType.getParameter(context, "id");
-                        //                            boolean added = addFlag(item, id);
-                        //                            if(!added) {
-                        //                                context.getSource().sendFeedback(Text.literal("Флаг " + id + " уже установлен").setStyle(JustCommand.warn));
-                        //                                return 0;
-                        //                            }
-                        //                            setItemMainHand(item);
-                        //                            context.getSource().sendFeedback(Text.literal("Флаг " + id + " добавлен!").setStyle(JustCommand.sucsess));
-                        //                            return 1;
-                        //                        })
-                        //                )
-                        //        )
-                        //        .then(ClientCommandManager.literal("remove")
-                        //                .then(ClientCommandManager.argument("id", new VariantsArgumentType("argument.id.unknown", true, flagsList.keySet()))
-                        //                        .executes(context -> {
-                        //                            if( msgItemIsNull(context) ) return 0;
-                        //                            ItemStack item = getItemMainHand();
-                        //                            String id = VariantsArgumentType.getParameter(context, "id");
-                        //                            boolean removed = removeFlag(item, id);
-                        //                            if(!removed) {
-                        //                                context.getSource().sendFeedback(Text.literal("Флаг " + id + " не установлен").setStyle(JustCommand.warn));
-                        //                                return 0;
-                        //                            }
-                        //                            setItemMainHand(item);
-                        //                            context.getSource().sendFeedback(Text.literal("Флаг " + id + " удален!").setStyle(JustCommand.sucsess));
-                        //                            return 1;
-                        //                        })
-                        //                )
-                        //        )
-                        //        .executes(context -> {
-                        //            if( msgItemIsNull(context) ) return 0;
-                        //            ItemStack item = getItemMainHand();
-                        //            Set<String> flags = getFlags(item);
-                        //            if(flags.isEmpty()) {
-                        //                context.getSource().sendFeedback(Text.literal("Флаги не установлены").setStyle(JustCommand.warn));
-                        //                return 0;
-                        //            }
-                        //            context.getSource().sendFeedback(Text.literal("\nУстановленные флаги скрытия:\n⏷"));
-                        //            for (String key : flags) {
-                        //                context.getSource().sendFeedback(Text.literal(" • " + translatedFlags.get(key)).setStyle(JustCommand.warn));
-                        //            }
-                        //            context.getSource().sendFeedback(Text.literal("⏶"));
-                        //            return 1;
-                        //        })
-                        //)
 
                         .then(ClientCommandManager.literal("lore")
                                 .then(ClientCommandManager.literal("clear")
@@ -775,6 +870,18 @@ public class EditItemCommand {
         item.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
     }
 
+    private static void clearItemTags(@NotNull ItemStack item) {
+        NbtComponent nbtComponent = item.get(DataComponentTypes.CUSTOM_DATA);
+        NbtCompound nbt;
+        if (nbtComponent == null) return;
+        nbt = nbtComponent.copyNbt();
+        NbtCompound values = nbt.getCompound("PublicBukkitValues");
+        for(String k : new HashSet<>(values.getKeys())) {
+            if(k.startsWith("justcreativeplus:")) values.remove(k);
+        }
+        nbt.put("PublicBukkitValues", values);
+        item.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
+    }
 
     private static boolean removeItemTag(@NotNull ItemStack item, String key) {
         NbtComponent nbtComponent = item.get(DataComponentTypes.CUSTOM_DATA);

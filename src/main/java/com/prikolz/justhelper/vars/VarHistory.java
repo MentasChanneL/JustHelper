@@ -41,15 +41,12 @@ public class VarHistory {
             }
             switch (type) {
                 case "game":
-                    System.out.println("+GAME name=" + name + " type=" + type);
                     history.game.add(name);
                     break;
                 case "local":
-                    System.out.println("+LOCAL name=" + name + " type=" + type);
                     history.local.add(name);
                     break;
                 case "save":
-                    System.out.println("+SAVE name=" + name + " type=" + type);
                     history.save.add(name);
             }
         }catch (Exception ignore) {}

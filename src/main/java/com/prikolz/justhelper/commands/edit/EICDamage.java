@@ -14,7 +14,7 @@ public class EICDamage {
     public static LiteralArgumentBuilder<FabricClientCommandSource> register() {
         var result = ClientCommandManager.literal("damage")
                 .then(ClientCommandManager.literal("set")
-                        .then(ClientCommandManager.argument("amount", IntegerArgumentType.integer())
+                        .then(ClientCommandManager.argument("amount", IntegerArgumentType.integer(0))
                                 .executes(context -> {
                                     if (EditItemCommand.msgItemIsNull(context)) return 0;
                                     ItemStack item = EditItemCommand.getItemMainHand();
@@ -29,7 +29,7 @@ public class EICDamage {
                         )
                 )
                 .then(ClientCommandManager.literal("set_max")
-                        .then(ClientCommandManager.argument("amount", IntegerArgumentType.integer())
+                        .then(ClientCommandManager.argument("amount", IntegerArgumentType.integer(1))
                                 .executes(context -> {
                                     if (EditItemCommand.msgItemIsNull(context)) return 0;
                                     ItemStack item = EditItemCommand.getItemMainHand();
@@ -49,11 +49,11 @@ public class EICDamage {
                     int has1 = getDamage(item);
                     int has2 = getMaxDamage(item);
                     context.getSource().sendFeedback(
-                            Text.literal("Повреждение: ").setStyle(JustCommand.error)
+                            Text.literal("Повреждение: ").setStyle(JustCommand.warn)
                                     .append(Text.literal(has1 + "").setStyle(JustCommand.white))
                     );
                     context.getSource().sendFeedback(
-                            Text.literal("Максимальная прочность: ").setStyle(JustCommand.error)
+                            Text.literal("Максимальная прочность: ").setStyle(JustCommand.warn)
                                     .append(Text.literal(has2 + "").setStyle(JustCommand.white))
                     );
                     return 1;

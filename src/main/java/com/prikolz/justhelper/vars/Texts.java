@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.prikolz.justhelper.Config;
+import com.prikolz.justhelper.vars.text.VarText;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.component.DataComponentTypes;
@@ -14,6 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
@@ -23,24 +25,8 @@ public abstract class Texts {
         String clipboard = MinecraftClient.getInstance().keyboard.getClipboard();
         if (!clipboard.isEmpty()) {
             try {
-                //int countTextPlaces = countSubstrings(Config.textGiveCommand, "%text%");
-                //int free = (250 - Config.textGiveCommand.replaceAll("%text%", "").length()) / countTextPlaces;
-                //if(free < 1) return "> В шаблонной команде нет свободного места! Укоротите команду в config.json!";
-                //List<String> els = splitText(clipboard.replaceAll("\n",""), free);
-//
-                //int i = 1;
-                //for(String el : els) {
-                //    String format = el;
-                //    if(format.endsWith(" ")) format = format.substring(0, format.length() - 1);
-                //    if(format.startsWith(" ")) format = format.substring(1);
-                //    format = format.replaceAll("§", "");
-                //    format = format.replaceAll("[\\x00-\\x1F\\x7F§]", "");
-                //    CommandBuffer.sendCommand( Config.textGiveCommand.replaceAll("%text%", format).replaceAll("%index%", i + "") );
-                //    i++;
-                //}
 
                 if(clipboard.length() > 16000 && !clip) return "> Текст слишком большой! Максимальный размер - 16 000 символов. Используйте аргумент +clip, чтобы разделить текст на несколько книг.";
-
 
                 List<String> els;
                 if(clip) {
@@ -67,15 +53,9 @@ public abstract class Texts {
 
                 for(String el : els) {
                     el = el.replaceAll("[\\x00-\\x1F\\x7F§]", "");
-                    String inTag = el.replaceAll("\"", "\\\\\"");
-                    String inDisplay = el.replaceAll("\"", "\\\\\\\\\"").replaceAll("'", "\\\\'");
-
-                    ItemStack item = new ItemStack(Items.BOOK);
-                    item.set(DataComponentTypes.ITEM_NAME, Text.literal(inDisplay));
-                    List<Text> lines = new LinkedList<>();
-                    lines.add(Text.translatable("creative_plus.argument.text.parsing_type.legacy").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(11257046))));
-                    item.set(DataComponentTypes.LORE, new LoreComponent(lines));
+                    ItemStack item = VarText.getTextExemplar(el, "plain");
                     player.getInventory().setStack(slots[i], item);
+                    MinecraftClient.getInstance().getNetworkHandler().sendPacket(new CreativeInventoryActionC2SPacket(i, item));
                     i++;
                 }
                 return "";

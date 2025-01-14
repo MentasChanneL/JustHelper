@@ -1,10 +1,17 @@
 package com.prikolz.justhelper.vars.text;
 
+import com.prikolz.justhelper.commands.JustCommand;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+
+import java.util.List;
 
 public interface VarText {
 
@@ -29,6 +36,13 @@ public interface VarText {
         nbt.put("display", display);
 
         result.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt) );
+        result.set(DataComponentTypes.CUSTOM_NAME, Text.literal(text)
+                .setStyle(Style.EMPTY.withItalic(false))
+        );
+        result.set(DataComponentTypes.LORE, new LoreComponent(List.of(
+                Text.literal("Нажмите шифт + пкм, чтобы").setStyle(JustCommand.white),
+                Text.literal("книга стала стандартного оформления.").setStyle(JustCommand.white)
+        )));
         return result;
     }
 

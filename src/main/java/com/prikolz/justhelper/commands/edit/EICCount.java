@@ -14,7 +14,7 @@ public class EICCount {
     public static LiteralArgumentBuilder<FabricClientCommandSource> register() {
         var result = ClientCommandManager.literal("count")
                 .then(ClientCommandManager.literal("set")
-                        .then(ClientCommandManager.argument("count", IntegerArgumentType.integer())
+                        .then(ClientCommandManager.argument("count", IntegerArgumentType.integer(1, 99))
                                 .executes(context -> {
                                     if (EditItemCommand.msgItemIsNull(context)) return 0;
                                     ItemStack item = EditItemCommand.getItemMainHand();
@@ -29,7 +29,7 @@ public class EICCount {
                         )
                 )
                 .then(ClientCommandManager.literal("set_max")
-                        .then(ClientCommandManager.argument("count", IntegerArgumentType.integer())
+                        .then(ClientCommandManager.argument("count", IntegerArgumentType.integer(1, 99))
                                 .executes(context -> {
                                     if (EditItemCommand.msgItemIsNull(context)) return 0;
                                     ItemStack item = EditItemCommand.getItemMainHand();
