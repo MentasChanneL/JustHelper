@@ -1,6 +1,5 @@
 package com.prikolz.justhelper.commands.edit;
 
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.prikolz.justhelper.commands.EditItemCommand;
 import com.prikolz.justhelper.commands.JustCommand;

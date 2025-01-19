@@ -648,6 +648,7 @@ public class EditItemCommand {
                         .then(EICDamage.register())
                         .then(EICCount.register())
                         .then(EICFireResistance.register())
+                        .then(EICProfile.register())
 
                         .executes(context -> {
                             context.getSource().sendFeedback(
