@@ -7,8 +7,11 @@ import com.prikolz.justhelper.commands.JustCommand;
 import com.prikolz.justhelper.commands.argumens.VariantsArgumentType;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ProfileComponent;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.*;
 
@@ -34,6 +37,9 @@ public class EICProfile {
                     if (EditItemCommand.msgItemIsNull(context)) return 0;
                     ItemStack item = EditItemCommand.getItemMainHand();
                     context.getSource().sendFeedback( getProfile(item) );
+                    DisplayEntity td = new DisplayEntity.TextDisplayEntity(EntityType.TEXT_DISPLAY, MinecraftClient.getInstance().world);
+                    td.setPos(0, 0, 0);
+                    MinecraftClient.getInstance().world.addEntity(td);
                     return 1;
                 })
                 ;

@@ -1,6 +1,7 @@
 package com.prikolz.justhelper;
 
 import com.prikolz.justhelper.commands.*;
+import com.prikolz.justhelper.devdata.DevData;
 import com.prikolz.justhelper.vars.VarHistory;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
@@ -21,6 +22,9 @@ public class Justhelper implements ModInitializer {
 				LOGGER.warn( msg );
 			}
 			VarHistory.loadFromFile();
+			try { DevData.Initialise(); } catch (Exception e) {
+				LOGGER.warn("Не удалось иниатилизировать  DevData: " + e.getMessage());
+			}
         } catch (Exception e) {
             LOGGER.error("Error: " + e.getMessage());
 			e.printStackTrace();

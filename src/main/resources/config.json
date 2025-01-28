@@ -18,6 +18,9 @@
     },
     "multimsg": {
       "name": "multimsg"
+    },
+    "describe": {
+      "name": "describe"
     }
   },
   "command_buffer_cooldown": 700,

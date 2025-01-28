@@ -27,7 +27,7 @@ public class TeleportConfirm {
 	@Inject( method = "<init>(Ljava/lang/String;)V", at = @At("RETURN"))
 	private void inject2(String string, CallbackInfo ci) {
 		ClientPlayerEntity camera = MinecraftClient.getInstance().player;
-		if((string.startsWith("tp ") || string.startsWith("teleport ")) && camera != null) {
+		if((string.startsWith("tp ") || string.startsWith("teleport ") || string.startsWith("editor tp")) && camera != null) {
 			if(System.currentTimeMillis() - tpTimestamp < 50) { return; }
 			tpTimestamp = System.currentTimeMillis();
 			if(Config.enableBackTeleport) {
