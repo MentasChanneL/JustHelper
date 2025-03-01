@@ -7,7 +7,10 @@ import com.prikolz.justhelper.commands.argumens.VariantsArgumentType;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.DamageResistantComponent;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.text.Text;
 import net.minecraft.util.Unit;
 
@@ -45,13 +48,13 @@ public class EICFireResistance {
 
     private static void setFireResistant(ItemStack item, boolean enable) {
         if(enable) {
-            item.set(DataComponentTypes.FIRE_RESISTANT, Unit.INSTANCE);
+            item.set(DataComponentTypes.DAMAGE_RESISTANT, new DamageResistantComponent(DamageTypeTags.IS_FIRE));
             return;
         }
-        item.remove(DataComponentTypes.FIRE_RESISTANT);
+        item.remove(DataComponentTypes.DAMAGE_RESISTANT);
     }
 
     private static boolean hasFireResistant(ItemStack item) {
-        return item.get(DataComponentTypes.FIRE_RESISTANT) != null;
+        return item.get(DataComponentTypes.DAMAGE_RESISTANT) != null;
     }
 }

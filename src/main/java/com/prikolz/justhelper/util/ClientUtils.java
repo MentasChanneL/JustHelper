@@ -19,7 +19,7 @@ public abstract class ClientUtils {
     }
     public static void send(Object ... messages) {
         for(Object o : messages) {
-            getPlayer().sendMessage( Text.literal(String.valueOf(o)) );
+            getPlayer().sendMessage( Text.literal(String.valueOf(o)), false );
         }
     }
     public static ClientWorld getWorld() {

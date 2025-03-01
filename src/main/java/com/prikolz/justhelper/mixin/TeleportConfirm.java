@@ -70,7 +70,7 @@ public class TeleportConfirm {
 																.setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY))
 												)
 										)
-								)
+								), false
 				);
 			}
 			if(Config.getCommand("signs").getBooleanParameter("flip", true)) {
@@ -112,9 +112,9 @@ public class TeleportConfirm {
 				.copy().setStyle(JustCommand.white))
 				.append(Text.of(" ——").copy().setStyle(Style.EMPTY.withColor(Formatting.GRAY)))
 		;
-		MinecraftClient.getInstance().player.sendMessage(header);
-		MinecraftClient.getInstance().player.sendMessage(out);
-		MinecraftClient.getInstance().player.sendMessage(Text.of("———————").copy().setStyle(Style.EMPTY.withColor(Formatting.GRAY)));
+		MinecraftClient.getInstance().player.sendMessage(header, false);
+		MinecraftClient.getInstance().player.sendMessage(out, false);
+		MinecraftClient.getInstance().player.sendMessage(Text.of("———————").copy().setStyle(Style.EMPTY.withColor(Formatting.GRAY)), false);
 	}
 
 	private MutableText getEmpty(String s) {
