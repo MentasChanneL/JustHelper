@@ -216,7 +216,7 @@ public class Config {
 
         private static void log(String message) {
             if(MinecraftClient.getInstance().player != null) {
-                MinecraftClient.getInstance().player.sendMessage(Text.literal(message));
+                MinecraftClient.getInstance().player.sendMessage(Text.literal(message), false);
             }
         }
 
