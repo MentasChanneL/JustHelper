@@ -1,7 +1,7 @@
 ﻿{
 	"schemaVersion": 1,
 	"id": "justhelper",
-	"version": ">=${version}",
+	"version": "${version}",
 	"name": "justhelper",
 	"description": "Данный мод поможет вам в кодинге на сервере JustMC!",
 	"authors": [

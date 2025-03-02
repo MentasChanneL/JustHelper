@@ -167,7 +167,7 @@ public class EICPotion {
             potion = component.potion();
         }
         list.add(new StatusEffectInstance(potionList.get(id), duration, amplifier, false, showParticle, showIcon));
-        item.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(potion, Optional.of(color), list, Optional.of("")));  // TODO: Custom имя зелий вместо Optional.of("")
+        item.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(potion, Optional.of(color), list));
     }
 
     private static boolean removePotionEffect(ItemStack item, String id) {
@@ -179,18 +179,18 @@ public class EICPotion {
             if(entry.getEffectType().matchesId( Identifier.of(id) )) { result.set(true); return true; }
             return false;
         });
-        if(result.get()) item.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(component.potion(), Optional.of(component.getColor()), list, Optional.of("")));
+        if(result.get()) item.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(component.potion(), Optional.of(component.getColor()), list));
         return result.get();
     }
 
     private static void colorPotion(ItemStack item, int color) {
         PotionContentsComponent component = item.get(DataComponentTypes.POTION_CONTENTS);
         if(component == null) {
-            component = new PotionContentsComponent(Optional.of(Registries.POTION.getEntry(Registries.POTION.get(0))), Optional.of(color), List.of(), Optional.of(""));
+            component = new PotionContentsComponent(Optional.of(Registries.POTION.getEntry(Registries.POTION.get(0))), Optional.of(color), List.of());
             item.set(DataComponentTypes.POTION_CONTENTS, component);
             return;
         }
-        component = new PotionContentsComponent(component.potion(), Optional.of(color), component.customEffects(), Optional.of(""));
+        component = new PotionContentsComponent(component.potion(), Optional.of(color), component.customEffects());
         item.set(DataComponentTypes.POTION_CONTENTS, component);
     }
 
