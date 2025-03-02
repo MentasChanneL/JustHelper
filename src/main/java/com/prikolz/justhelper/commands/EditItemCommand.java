@@ -810,7 +810,7 @@ public class EditItemCommand {
 
         if (world != null) {
             EnchantmentHelper.apply(item, builder -> {
-                Registry<Enchantment> registry = world.getRegistryManager().getOptional(RegistryKeys.ENCHANTMENT).get();
+                Registry<Enchantment> registry = world.getRegistryManager().get(RegistryKeys.ENCHANTMENT);
                 Optional<RegistryEntry.Reference<Enchantment>> registryEntry = registry.getEntry(Identifier.ofVanilla(key));
                 registryEntry.ifPresent(enchantmentReference -> builder.set(enchantmentReference, level));
             });
@@ -823,7 +823,7 @@ public class EditItemCommand {
 
         if (world != null) {
             EnchantmentHelper.apply(item, builder -> {
-                Registry<Enchantment> registry = world.getRegistryManager().getOptional(RegistryKeys.ENCHANTMENT).get();
+                Registry<Enchantment> registry = world.getRegistryManager().get(RegistryKeys.ENCHANTMENT);
                 Optional<RegistryEntry.Reference<Enchantment>> registryEntry = registry.getEntry(Identifier.ofVanilla(key));
                 registryEntry.ifPresent(enchantmentReference -> builder.set(enchantmentReference, 0));
             });

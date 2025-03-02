@@ -16,7 +16,6 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -43,12 +42,9 @@ public class EnchantsArgumentType implements ArgumentType<String> {
         MinecraftClient client = MinecraftClient.getInstance();
         if(client.world == null) return CommandSource.suggestMatching(enchantList, builder);;
 
-        Optional<Registry<Enchantment>> registryOptional = client.world.getRegistryManager().getOptional(RegistryKeys.ENCHANTMENT);
-        if (registryOptional.isPresent()) {
-            Registry<Enchantment> reg = registryOptional.get();
-            for (RegistryKey<Enchantment> key : reg.getKeys()) {
-                enchantList.add(key.getValue().getPath());
-            }
+        Registry<Enchantment> reg = client.world.getRegistryManager().get(RegistryKeys.ENCHANTMENT);
+        for(RegistryKey<Enchantment> key : reg.getKeys() ) {
+            enchantList.add(key.getValue().getPath());
         }
         return CommandSource.suggestMatching(enchantList, builder);
     }

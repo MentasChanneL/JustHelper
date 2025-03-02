@@ -3,7 +3,6 @@ package com.prikolz.justhelper.devdata;
 import com.prikolz.justhelper.util.ClientUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.math.BlockPos;
@@ -50,7 +49,7 @@ public class DescribeFloor {
         try {
             desc = desc.replaceAll("&", "§").replaceAll("%ss", "     ").replaceAll("%s", " ");
             NbtCompound main = NbtHelper.fromNbtProviderString("{id:\"minecraft:text_display\",Rotation:[90F,0F],transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[0f,-1.5f,0f],scale:[10f,10f,10f]},text:'\"" + desc +"\"',background:" + -11382190 + "}");
-            Entity ent = EntityType.getEntityFromNbt(main, ClientUtils.getWorld(), SpawnReason.NATURAL).get();
+            Entity ent = EntityType.getEntityFromNbt(main, ClientUtils.getWorld()).get();
             BlockPos pos = new BlockPos(-1, 4 + (7 * (floor - 1)), 47);
             ent.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
             ClientUtils.getWorld().addEntity(ent);
