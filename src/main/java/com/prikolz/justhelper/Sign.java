@@ -1,7 +1,9 @@
 package com.prikolz.justhelper;
 
+import com.prikolz.justhelper.util.ClientUtils;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.block.entity.SignBlockEntity;
+import net.minecraft.block.entity.SignText;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.text.Style;
@@ -12,6 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 public class Sign {
     public final int x;
@@ -35,6 +38,14 @@ public class Sign {
     public static void add(BlockPos pos) {
         Sign sign = new Sign(pos.getX(), pos.getY(), pos.getZ());
         Sign.signs.put( pos.getX() + " " + pos.getY() + " " + pos.getZ(), sign );
+    }
+
+    public static void forEachSigns(BiConsumer<Sign, SignText> consumer) {
+        for(Sign sign : Sign.signs.values()) {
+            SignBlockEntity ent = (SignBlockEntity) ClientUtils.getWorld().getBlockEntity(new BlockPos(sign.x, sign.y, sign.z));
+            if (ent == null) continue;
+            consumer.accept(sign, ent.getFrontText());
+        }
     }
 
     public static void searchSigns(FabricClientCommandSource source, String search, boolean printAll) {

@@ -1,9 +1,11 @@
 package com.prikolz.justhelper.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class JustCommand {
@@ -17,5 +19,9 @@ public class JustCommand {
 
     public static void registerInDispacher(LiteralArgumentBuilder<FabricClientCommandSource> manager) {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(manager));
+    }
+
+    public static void send(CommandContext<FabricClientCommandSource> context, Text text) {
+        context.getSource().sendFeedback(text);
     }
 }

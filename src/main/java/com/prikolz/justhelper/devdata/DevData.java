@@ -1,10 +1,8 @@
 package com.prikolz.justhelper.devdata;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import com.google.gson.stream.JsonWriter;
 import com.prikolz.justhelper.util.ClientUtils;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -13,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class DevData {
 
@@ -23,8 +22,39 @@ public class DevData {
         Path filePath = Paths.get(directoryName, "dev_data.json");
         if (!Files.exists(filePath)) return;
         JsonObject json = (JsonObject) JsonParser.parseReader(new FileReader(directoryName + "/dev_data.json"));
+        readJson(json);
+    }
+
+    public static JsonObject getJsonWorld(String worldName) {
+        JsonObject result = new JsonObject();
+        DevData devData = data.get(worldName);
+        if (devData == null) return result;
+        JsonObject describesJson = new JsonObject();
+        JsonObject commentsJson = new JsonObject();
+        for(int kd : devData.describes.keySet()) {
+            describesJson.add( String.valueOf(kd), new JsonPrimitive(devData.describes.get(kd)) );
+        }
+        for (DevComment c : devData.comments) {
+            JsonObject commentJson = new JsonObject();
+            commentJson.add("text", new JsonPrimitive(c.comment));
+            commentJson.add("scale", new JsonPrimitive(c.scale));
+            commentsJson.add(c.floor + "_" + c.line + "_" + c.x, commentJson);
+        }
+        result.add("describes", describesJson);
+        result.add("comments", commentsJson);
+        return result;
+    }
+
+    public static JsonObject createJson() {
+        JsonObject main = new JsonObject();
+        for(String k : data.keySet()) main.add(k, getJsonWorld(k));
+        return main;
+    }
+
+    public static void readJson(JsonObject json) {
         for(String k : json.keySet()) {
             HashMap<Integer, String> describes = new HashMap<>();
+            HashSet<DevComment> comments = new HashSet<>();
             JsonObject o = json.getAsJsonObject(k);
             if(o.has("describes")) {
                 JsonObject jsonDesc = o.getAsJsonObject("describes");
@@ -32,22 +62,25 @@ public class DevData {
                     describes.put(Integer.parseInt(kd), jsonDesc.get(kd).getAsString());
                 }
             }
-            data.put(k, new DevData(k, describes));
+            if(o.has("comments")) {
+                JsonObject jsonCom = o.getAsJsonObject("comments");
+                for (String pos : jsonCom.keySet()) {
+                    String[] argsPos = pos.split("_");
+                    int floor = Integer.parseInt(argsPos[0]);
+                    int line = Integer.parseInt(argsPos[1]);
+                    int x = Integer.parseInt(argsPos[2]);
+                    JsonObject co = jsonCom.getAsJsonObject(pos);
+                    float scale = co.getAsJsonPrimitive("scale").getAsFloat();
+                    String text = co.getAsJsonPrimitive("text").getAsString();
+                    comments.add( new DevComment(text, floor, line, x, scale) );
+                }
+            }
+            data.put(k, new DevData(k, describes, comments));
         }
     }
 
     public static void Write() throws IOException {
-        JsonObject main = new JsonObject();
-        for(String k : data.keySet()) {
-            DevData devData = data.get(k);
-            JsonObject devJson = new JsonObject();
-            JsonObject describesJson = new JsonObject();
-            for(int kd : devData.describes.keySet()) {
-                describesJson.add( String.valueOf(kd), new JsonPrimitive(devData.describes.get(kd)) );
-            }
-            devJson.add("describes", describesJson);
-            main.add(k, devJson);
-        }
+        JsonObject main = createJson();
         String directoryName = FabricLoader.getInstance().getGameDir().toString() + "/config/justhelper";
         Path filePath = Paths.get(directoryName, "dev_data.json");
         if (!Files.exists(filePath)) {
@@ -63,11 +96,22 @@ public class DevData {
         }
     }
 
+    public static DevData get() {
+        DevData data = DevData.data.get(ClientUtils.worldName());
+        if(data == null) {
+            data = new DevData(ClientUtils.worldName(), new HashMap<>(), new HashSet<>());
+            DevData.data.put(ClientUtils.worldName(), data);
+        }
+        return data;
+    }
+
     public String worldName;
     public HashMap<Integer, String> describes;
+    public HashSet<DevComment> comments;
 
-    public DevData(String worldName, HashMap<Integer, String> describes) {
+    public DevData(String worldName, HashMap<Integer, String> describes, HashSet<DevComment> comments) {
         this.describes = describes;
         this.worldName = worldName;
+        this.comments = comments;
     }
 }

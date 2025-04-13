@@ -2,6 +2,9 @@ package com.prikolz.justhelper.mixin;
 
 import com.prikolz.justhelper.Sign;
 import com.prikolz.justhelper.devdata.DescribeFloor;
+import com.prikolz.justhelper.devdata.DevComment;
+import com.prikolz.justhelper.devdata.Share;
+import com.prikolz.justhelper.util.ClientUtils;
 import com.prikolz.justhelper.util.Scheduler;
 import com.prikolz.justhelper.vars.VarHistory;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -27,9 +30,17 @@ public class ClientWorldMixin {
         String name = registryRef.getValue().getPath();
         try {
             VarHistory.saveJson();
+            Scheduler.run(500, () -> {
+                if (ClientUtils.InDev()) ClientUtils.getPlayer().setClientPermissionLevel(2);
+            });
             Scheduler.run(1000, () -> {
                 DescribeFloor.ents.clear();
                 DescribeFloor.describeDevWorld();
+                DevComment.commentWorld();
+                Sign.forEachSigns( (sign, text) -> {
+                    var t = text.getMessage(1, false);
+                    Share.readShare( t.getString() );
+                } );
             });
         }catch (Exception e) {
             e.printStackTrace();

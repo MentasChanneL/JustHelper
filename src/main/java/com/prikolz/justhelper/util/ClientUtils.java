@@ -5,7 +5,10 @@ import net.minecraft.client.gui.hud.ChatHudLine;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -34,5 +37,9 @@ public abstract class ClientUtils {
         String w = worldName();
         if(w == null) return false;
         return w.endsWith("_creativeplus_editor");
+    }
+    @Nullable
+    public static Vec3d crosshairHit() {
+        return MinecraftClient.getInstance().crosshairTarget.getPos();
     }
 }

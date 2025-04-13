@@ -8,6 +8,7 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class DescribeFloor {
 
@@ -23,25 +24,28 @@ public class DescribeFloor {
         }
     }
 
-    public static void addDescribe(int floor, String text) {
+    public static void addDescribe(boolean write, int floor, String text) {
         if(!ClientUtils.InDev()) return;
-        DevData data = DevData.data.get(ClientUtils.worldName());
-        if(data == null) {
-            data = new DevData(ClientUtils.worldName(), new HashMap<>());
-            DevData.data.put(ClientUtils.worldName(), data);
-        }
+        DevData data = DevData.get();
         if(ents.containsKey(floor)) {
             ClientUtils.getWorld().removeEntity(ents.get(floor), Entity.RemovalReason.KILLED);
             ents.remove(floor);
         }
         if(text.isEmpty()) {
             data.describes.remove(floor);
-            try{DevData.Write();}catch(Exception e) { ClientUtils.send("Ошибка записи dev_data.json! " + e.getMessage()); };
+            if (write) try{DevData.Write();}catch(Exception e) { ClientUtils.send("Ошибка записи dev_data.json! " + e.getMessage()); };
             return;
         }
         data.describes.put(floor, text);
-        try{DevData.Write();}catch(Exception e) { ClientUtils.send("Ошибка записи dev_data.json! " + e.getMessage()); };
+        if (write) try{DevData.Write();}catch(Exception e) { ClientUtils.send("Ошибка записи dev_data.json! " + e.getMessage()); };
         createInWorld(text, floor);
+    }
+
+    public static String getDescribe(int floor) {
+        if(!ClientUtils.InDev()) return null;
+        DevData data = DevData.data.get(ClientUtils.worldName());
+        if(data == null) return null;
+        return data.describes.get(floor);
     }
 
     public static void createInWorld(String desc, int floor) {

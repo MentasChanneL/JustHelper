@@ -694,49 +694,6 @@ public class EditItemCommand {
         }
     }
 
-    //private static Set<String> getFlags(ItemStack item) {
-    //    Set<String> result = new HashSet<>();
-    //    NbtCompound nbt = item.getNbt();
-    //    if(nbt == null) {
-    //        return result;
-    //    }
-    //    int flags = nbt.getInt("HideFlags");
-    //    if(flags == 0) {
-    //        return result;
-    //    }
-    //    int current = 128;
-    //    int check;
-    //    int i = 0;
-    //    while(flags > 0) {
-    //        check = flags - current;
-    //        if(check > -1) {
-    //            flags = check;
-    //            result.add(flagsIdList[i]);
-    //        }
-    //        i++;
-    //        if(i == flagsIdList.length) break;
-    //        current /= 2;
-    //    }
-    //    return result;
-    //}
-
-    //private static boolean removeFlag(ItemStack item, String key) {
-    //    if( !getFlags(item).contains(key) ) return false;
-    //    NbtCompound nbt = item.getNbt();
-    //    nbt.putInt("HideFlags", nbt.getInt("HideFlags") - flagsList.get(key).getFlag());
-    //    item.setNbt(nbt);
-    //    return true;
-    //}
-//
-    //private static boolean addFlag(ItemStack item, String key) {
-    //    if( getFlags(item).contains(key) ) return false;
-    //    NbtCompound nbt = item.getNbt();
-    //    if(nbt == null) nbt = new NbtCompound();
-    //    nbt.putInt("HideFlags", nbt.getInt("HideFlags") + flagsList.get(key).getFlag());
-    //    item.setNbt(nbt);
-    //    return true;
-    //}
-
     private static String addLoreLines(ItemStack item, int pos, VarText[] lines, boolean isNew) {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientWorld world = client.world;

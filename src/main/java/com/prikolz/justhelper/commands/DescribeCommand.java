@@ -27,7 +27,7 @@ public class DescribeCommand {
                                             }
                                             int pos = FloorArgumentType.getParameter(context, "floor");
                                             String desc = StringArgumentType.getString(context, "desc");
-                                            DescribeFloor.addDescribe(pos, desc);
+                                            DescribeFloor.addDescribe(true, pos, desc);
                                             context.getSource().sendFeedback(
                                                     Text.literal("Добавлено описание для ").setStyle(JustCommand.success)
                                                             .append(Text.literal(String.valueOf(pos)).setStyle(JustCommand.white))
@@ -45,7 +45,7 @@ public class DescribeCommand {
                                         return 0;
                                     }
                                     int pos = FloorArgumentType.getParameter(context, "floor");
-                                    DescribeFloor.addDescribe(pos, "");
+                                    DescribeFloor.addDescribe(true, pos, "");
                                     context.getSource().sendFeedback(
                                             Text.literal("Удалено описание для ").setStyle(JustCommand.warn)
                                                     .append(Text.literal(String.valueOf(pos)).setStyle(JustCommand.white))

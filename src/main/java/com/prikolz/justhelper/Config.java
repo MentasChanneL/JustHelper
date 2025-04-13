@@ -81,6 +81,8 @@ public class Config {
         commands.put("clipboard", ConfiguredCommand.fromJson(commandsSector, "clipboard", new RequiredCommandArgument("name", "clipboard"), new RequiredCommandArgument("clip_limit", 5000.0)));
         commands.put("multimsg", ConfiguredCommand.fromJson(commandsSector, "multimsg", new RequiredCommandArgument("name", "multimsg")));
         commands.put("describe", ConfiguredCommand.fromJson(commandsSector, "describe", new RequiredCommandArgument("name", "describe")));
+        commands.put("comment", ConfiguredCommand.fromJson(commandsSector, "comment", new RequiredCommandArgument("name", "comment")));
+        commands.put("share", ConfiguredCommand.fromJson(commandsSector, "share", new RequiredCommandArgument("name", "share")));
         clickMessageConfig = ClickMessageConfig.parse(main);
 
         SignsCommand.register();
@@ -88,6 +90,8 @@ public class Config {
         EditItemCommand.register();
         MultiMsgCommand.register();
         DescribeCommand.register();
+        CommentCommand.register();
+        ShareCommand.register();
 
         try {
             SCConfig.parse(main);

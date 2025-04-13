@@ -1,5 +1,6 @@
 package com.prikolz.justhelper;
 
+import com.prikolz.justhelper.util.DevWorld;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 
@@ -36,12 +37,8 @@ public abstract class JustSignOutput {
         return result;
     }
 
-    public static int mathFloor(int y) {
-        return (y - 5) / 7 + 1;
-    }
-
     public static Text generate(int x, int y, int z, Text[] lines) {
-        int mathFloor = mathFloor(y);
+        int mathFloor = DevWorld.mathFloor(y);
         String floor = toMini("(" + mathFloor + ")");
         MutableText hoverText = Text.literal("");
         MutableText copyText = Text.literal(" ");

@@ -5,10 +5,10 @@ import com.prikolz.justhelper.JustSignOutput;
 import com.prikolz.justhelper.Sign;
 import com.prikolz.justhelper.SignInfo;
 import com.prikolz.justhelper.commands.JustCommand;
+import com.prikolz.justhelper.util.DevWorld;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
 import net.minecraft.text.*;
@@ -51,7 +51,7 @@ public class TeleportConfirm {
 				}
 
 				String xyz = camera.getBlockX() + " " + camera.getBlockY() + " " + camera.getBlockZ();
-				String floor = JustSignOutput.toMini("(" + JustSignOutput.mathFloor(camera.getBlockY()) + ")");
+				String floor = JustSignOutput.toMini("(" + DevWorld.mathFloor(camera.getBlockY()) + ")");
 				Style yellow = Style.EMPTY.withColor(Formatting.YELLOW);
 				camera.sendMessage(
 						Text.literal("")
@@ -66,7 +66,7 @@ public class TeleportConfirm {
 										.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
 														Text.literal("")
 																.append(fullText)
-																.append(Text.literal("\n" + JustSignOutput.mathFloor(camera.getBlockY()) + " этаж " + camera.getBlockZ() / 4 + " линия " + xyz + "\nНажмите, для телепортации"))
+																.append(Text.literal("\n" + DevWorld.mathFloor(camera.getBlockY()) + " этаж " + camera.getBlockZ() / 4 + " линия " + xyz + "\nНажмите, для телепортации"))
 																.setStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY))
 												)
 										)
